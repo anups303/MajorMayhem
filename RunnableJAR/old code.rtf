@@ -1,0 +1,352 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang16393{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green0\blue255;}
+{\*\generator Msftedit 5.41.21.2510;}\viewkind4\uc1\pard\sa200\sl276\slmult1\lang9\f0\fs22 package com.mayhem.game;\par
+\par
+import java.util.ArrayList;\par
+\par
+import com.badlogic.gdx.ApplicationAdapter;\par
+import com.badlogic.gdx.Gdx;\par
+import com.badlogic.gdx.Input;\par
+import com.badlogic.gdx.InputProcessor;\par
+import com.badlogic.gdx.Input.Keys;\par
+import com.badlogic.gdx.graphics.GL20;\par
+import com.badlogic.gdx.graphics.OrthographicCamera;\par
+import com.badlogic.gdx.graphics.Texture;\par
+import com.badlogic.gdx.graphics.Texture.TextureFilter;\par
+import com.badlogic.gdx.graphics.g2d.Sprite;\par
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;\par
+import com.badlogic.gdx.maps.MapProperties;\par
+import com.badlogic.gdx.maps.tiled.TiledMap;\par
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;\par
+//import com.badlogic.gdx.maps.tiled.TiledMapTile;\par
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;\par
+//import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;\par
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;\par
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;\par
+import com.badlogic.gdx.files.*;\par
+\par
+//import com.badlogic.gdx.math.Rectangle;\par
+//import com.badlogic.gdx.utils.viewport.FitViewport;\par
+import javax.swing.JOptionPane;\par
+import java.util.*;\par
+\par
+public class Bomber extends ApplicationAdapter implements InputProcessor \{\par
+\tab Texture img;\par
+\tab TiledMap tiledMap;\par
+\tab OrthographicCamera camera;\par
+    TiledMapRenderer tiledMapRenderer;\par
+    SpriteBatch sb;\par
+    Texture texture;\par
+    Texture txtrBomb;\par
+    Sprite sprite;\par
+    Sprite sprBomb;\par
+    float posX, posY;\par
+    //Rectangle glViewport;\par
+    TiledMapTileLayer collisionLayer;\par
+    MapProperties prop;\par
+    int mapWidth, mapHeight, tilePixelWidth, tilePixelHeight, mapPixelWidth, mapPixelHeight;\par
+    float tileWidth, tileHeight;\par
+    boolean collisionX = false, collisionY = false;\par
+    String points, line, xypt[];\par
+    String pattern = "({\field{\*\fldinst{HYPERLINK "\\\\\\\\d+)([\\\\\\\\,])(\\\\\\\\d+"}}{\fldrslt{\ul\cf1\\\\d+)([\\\\,])(\\\\d+}}}\f0\fs22 )";\par
+    MyCoord coords;\par
+    ArrayList<MyCoord> coordlist;\par
+    //ArrayList<MyCoord> coordcheck;\par
+\tab\par
+    @Override\par
+\tab public void create () \{\par
+\tab\tab float w = Gdx.graphics.getWidth();\par
+        float h = Gdx.graphics.getHeight();\par
+\par
+        camera = new OrthographicCamera();\par
+        camera.setToOrtho(false, w, h);\tab\tab\tab\tab\tab\tab //visible game world\par
+        camera.update();\par
+        //camera.position.set(w/2, h/2, 0);\tab\tab\tab\tab\tab //centered sprite by commenting this out!!\par
+        //glViewport = new Rectangle(0, 0, w, h);\par
+        \par
+        //coords = new MyCoord();\tab\tab\tab\tab\tab\tab\tab\tab //adding list of blocks\par
+        coordlist = new ArrayList<Bomber.MyCoord>();\par
+        FileHandle handle = Gdx.files.internal("BlockPoints.txt");\par
+        points = handle.readString();\par
+        Scanner scanner = new Scanner(points);\par
+        while(scanner.hasNextLine()) \{\par
+        \tab coords = new MyCoord();\par
+        \tab String line = scanner.nextLine();\par
+        \tab xypt = line.split(",");\par
+        \tab coords.setX(Integer.parseInt(xypt[0]));\par
+        \tab coords.setY(Integer.parseInt(xypt[1]));\par
+        \tab coordlist.add(coords);\par
+        \}\par
+        scanner.close();\par
+        //List<Point> points = new ArrayList<Point>();\par
+        \par
+        \par
+        tiledMap = new TmxMapLoader().load("MapOne.tmx");\tab\tab\tab\tab\tab //Map created using Tiled;present in assets\par
+        prop = tiledMap.getProperties();\par
+        mapWidth = prop.get("width", Integer.class);\par
+        mapHeight = prop.get("height", Integer.class);\par
+        tilePixelWidth = prop.get("tilewidth", Integer.class);\par
+        tilePixelHeight = prop.get("tileheight", Integer.class);\par
+        mapPixelWidth = mapWidth * tilePixelWidth;\par
+        mapPixelHeight = mapHeight * tilePixelHeight;\par
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);\par
+        collisionLayer = new TiledMapTileLayer(mapWidth, mapHeight, tilePixelWidth, tilePixelHeight);\par
+        \par
+        tileWidth = collisionLayer.getTileWidth();\par
+        tileHeight = collisionLayer.getTileHeight();\par
+        Gdx.input.setInputProcessor(this);\par
+        \par
+        sb = new SpriteBatch();\par
+        texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));\tab\tab //Character sprite;present in assets\par
+        texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);\par
+        sprite = new Sprite(texture);\par
+        \par
+        txtrBomb = new Texture(Gdx.files.internal("Bomb_f01.png"));\par
+        txtrBomb.setFilter(TextureFilter.Linear, TextureFilter.Linear);\par
+        sprBomb = new Sprite(txtrBomb);\par
+        sprBomb.setSize(32, 32);\par
+        //sprite.setOrigin(50, 50);\par
+        sprite.setSize(32, 64);\par
+        //posX = 320.0f;\par
+        posX = 320.0f;\par
+        //posY = 2944.0f;\par
+        posY = 2944.0f;\par
+        sprite.setPosition(posX, posY);\par
+        //sprBomb.setPosition(posX, posY);\par
+        camera.position.x = posX;\par
+        camera.position.y = posY;\par
+\tab\}\par
+\par
+\tab @Override\par
+\tab public void dispose () \{\par
+\tab\tab sb.dispose();\par
+\tab\tab texture.dispose();\par
+\tab\tab txtrBomb.dispose();\par
+\tab\}\par
+\tab\par
+\tab @Override\par
+\tab public void render () \{\par
+\tab\tab float deltaTime = Gdx.graphics.getDeltaTime();\par
+\tab\tab Gdx.gl.glClearColor(1, 1, 1, 1);\tab\tab\tab\tab\tab\tab\tab\tab\tab //clear screen RGB values\par
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);\par
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);\par
+        \par
+        /*camera.position.x = sprite.getX();\par
+        camera.position.y = sprite.getY();*/\par
+        camera.update();\par
+        \par
+        //if polling for KB input\par
+        /*if(Gdx.input.isKeyPressed(Input.Keys.LEFT))\par
+        \tab sprite.translateX(-1f);\par
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))\par
+        \tab sprite.translateX(1f);\par
+        if(Gdx.input.isKeyPressed(Input.Keys.UP))\par
+        \tab sprite.translateY(1f);\par
+        if(Gdx.input.isKeyPressed(Input.Keys.DOWN))\par
+        \tab sprite.translateY(-1f);*/\par
+        \par
+        tiledMapRenderer.setView(camera);\par
+        tiledMapRenderer.render();\par
+        sb.setProjectionMatrix(camera.combined);\par
+        sprite.setPosition(posX, posY);\par
+        sb.begin();\par
+        sprite.draw(sb);\par
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) \{\par
+        \tab sprBomb.setPosition(sprite.getX(), sprite.getY());\par
+\tab\tab\tab sprBomb.draw(sb);\par
+        \tab //JOptionPane.showMessageDialog(null, points);\par
+        \}\par
+        //sprBomb.draw(sb);\par
+        sb.end();\par
+\tab\}\par
+\tab\par
+\tab @Override\par
+    public boolean keyDown(int keycode) \{\par
+\tab\tab float moveAmount = 32.0f;\par
+\tab\tab MyCoord coords1 = new MyCoord();\par
+\tab\tab if(keycode == Keys.LEFT) \{\par
+\tab\tab\tab /*collisionX = collisionLayer.getCell((int)(sprite.getX()/tileWidth), (int)(sprite.getY()/tileHeight))\par
+\tab\tab\tab\tab\tab .getTile().getProperties().containsKey("blocked");*/\par
+\tab\tab\tab //JOptionPane.showMessageDialog(null, (int)(sprite.getX()-moveAmount)+" "+(int)(sprite.getY()));\par
+\tab\tab\tab\par
+\tab\tab\tab /*Cell c = collisionLayer.getCell((int)(sprite.getX()/tileWidth),(int)(sprite.getY()/tileHeight));\par
+\tab\tab\tab TiledMapTile tl = c.getTile();\par
+\tab\tab\tab MapProperties mp = tl.getProperties();\par
+\tab\tab\tab if(mp.containsKey("blocked"))\par
+\tab\tab\tab\tab JOptionPane.showMessageDialog(null, "blocked");*/\par
+\tab\tab\tab\par
+\tab\tab\tab coords1.setX((int)(sprite.getX()-moveAmount));\par
+\tab\tab\tab coords1.setY((int)(sprite.getY()));\par
+\tab\tab\tab\tab\tab\tab\par
+\tab\tab\tab //JOptionPane.showMessageDialog(null, (int)(sprite.getX()-moveAmount)+"+"+(int)sprite.getY());\par
+\tab\tab\tab if(!coordlist.contains(coords1)) \{\par
+\tab\tab\tab\tab if((int)sprite.getX()>32)\par
+\tab\tab\tab\tab\tab posX -= moveAmount;\par
+\tab\tab\tab\tab if((int)sprite.getX()>320 && (int)sprite.getX()<=2880)\par
+\tab\tab\tab\tab\tab camera.translate((int) -moveAmount,0,0);\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\tab\tab if(keycode == Keys.RIGHT) \{\par
+\tab\tab\tab /*collisionX = collisionLayer.getCell((int)(sprite.getX()/tileWidth), (int)(sprite.getY()/tileHeight))\par
+\tab\tab\tab\tab\tab .getTile().getProperties().containsKey("blocked");*/\par
+\tab\tab\tab coords1.setX((int)(sprite.getX()+moveAmount));\par
+\tab\tab\tab coords1.setY((int)(sprite.getY()));\par
+\tab\tab\tab\par
+\tab\tab\tab if(!coordlist.contains(coords1)) \{\par
+\tab\tab\tab\tab if((int)sprite.getX()<3136)\par
+\tab\tab\tab\tab\tab posX += moveAmount;\par
+\tab\tab\tab\tab if((int)sprite.getX()>=320 && (int)sprite.getX()<2880)\par
+\tab\tab\tab\tab\tab camera.translate((int) moveAmount,0,0);\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\tab\tab if(keycode == Keys.UP) \{\par
+\tab\tab\tab /*collisionY = collisionLayer.getCell((int)(sprite.getX()/tileWidth), (int)(sprite.getY()/tileHeight))\par
+\tab\tab\tab\tab\tab .getTile().getProperties().containsKey("blocked");*/\par
+\tab\tab\tab coords1.setX((int)(sprite.getX()));\par
+\tab\tab\tab coords1.setY((int)(sprite.getY()+moveAmount));\par
+\tab\tab\tab\par
+\tab\tab\tab if(!coordlist.contains(coords1)) \{\par
+\tab\tab\tab\tab if((int)sprite.getY()<3136)\par
+\tab\tab\tab\tab\tab posY += moveAmount;\par
+\tab\tab\tab\tab if((int)sprite.getY()>=256 && (int)sprite.getY()<2944)\par
+\tab\tab\tab\tab\tab camera.translate(0,(int) moveAmount,0);\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\tab\tab if(keycode == Keys.DOWN) \{\par
+\tab\tab\tab /*collisionY = collisionLayer.getCell((int)(sprite.getX()/tileWidth), (int)(sprite.getY()/tileHeight))\par
+\tab\tab\tab\tab\tab .getTile().getProperties().containsKey("blocked");*/\par
+\tab\tab\tab coords1.setX((int)(sprite.getX()));\par
+\tab\tab\tab coords1.setY((int)(sprite.getY()-moveAmount));\par
+\tab\tab\tab\par
+\tab\tab\tab if(!coordlist.contains(coords1)) \{\par
+\tab\tab\tab\tab if((int)sprite.getY()>32)\par
+\tab\tab\tab\tab\tab posY -= moveAmount;\par
+\tab\tab\tab\tab if((int)sprite.getY()>256 && (int)sprite.getY()<=2944)\par
+\tab\tab\tab\tab\tab camera.translate(0,(int) -moveAmount,0);\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\tab\tab if(keycode == Keys.SPACE) \{\par
+\tab\tab\tab //JOptionPane.showMessageDialog(null, (int)sprite.getX()+"+"+(int)sprite.getY());\par
+\tab\tab\tab //JOptionPane.showMessageDialog(null, coordlist.get(0));\par
+\tab\tab\tab //sprBomb.setPosition(sprite.getX(), sprite.getY());\par
+\tab\tab\tab //sprBomb.draw(sb);\par
+\tab\tab\tab\par
+\tab\tab\tab /*coords = new MyCoord();\tab\tab\tab\tab\tab\tab\tab\tab //adding list of blocks\par
+\tab         coordlist = new ArrayList<Bomber.MyCoord>();\par
+\tab         FileHandle handle = Gdx.files.internal("BlockPoints.txt");\par
+\tab         points = handle.readString();\par
+\tab         Scanner scanner = new Scanner(points);\par
+\tab         while(scanner.hasNextLine()) \{\par
+\tab         \tab coords = new MyCoord();\par
+\tab         \tab String line = scanner.nextLine();\par
+\tab         \tab xypt = line.split(",");\par
+\tab         \tab //JOptionPane.showMessageDialog(null, Integer.parseInt(xypt[0])+" "+Integer.parseInt(xypt[1]));\par
+\tab         \tab coords.setX(Integer.parseInt(xypt[0]));\par
+\tab         \tab coords.setY(Integer.parseInt(xypt[1]));\par
+\tab         \tab coordlist.add(coords);\par
+\tab         \}\par
+\tab         scanner.close();*/\par
+\tab         \par
+\tab         /*for(MyCoord item: coordlist)\par
+\tab         \tab JOptionPane.showMessageDialog(null, item.X+" "+item.Y);*/\par
+\tab         \par
+\tab         /*coords1.setX((int)posX);\par
+\tab         coords1.setY((int)posY);\par
+\tab         if(coordlist.contains(coords1))\par
+\tab         \tab JOptionPane.showMessageDialog(null, (int)posX+" "+(int)posY+" present");*/\par
+\tab\tab\}\par
+        return true;\par
+    \}\par
+\par
+    @Override\par
+    public boolean keyUp(int keycode) \{\par
+    \tab //to pan camera - commented out\par
+        /*if(keycode == Input.Keys.LEFT)\par
+            camera.translate(-32,0);\par
+        if(keycode == Input.Keys.RIGHT)\par
+            camera.translate(32,0);\par
+        if(keycode == Input.Keys.UP)\par
+            camera.translate(0,32);\par
+        if(keycode == Input.Keys.DOWN)\par
+            camera.translate(0,-32);\par
+        if(keycode == Input.Keys.NUM_1)\par
+            tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());\par
+        if(keycode == Input.Keys.NUM_2)\par
+            tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());*/\par
+        return false;\par
+    \}\par
+\par
+    @Override\par
+    public boolean keyTyped(char character) \{\par
+\par
+        return false;\par
+    \}\par
+\par
+    @Override\par
+    public boolean scrolled(int amount) \{\par
+        return false;\par
+    \}\par
+\par
+\tab @Override\par
+\tab public boolean touchDown(int screenX, int screenY, int pointer, int button) \{\par
+\tab\tab // TODO Auto-generated method stub\par
+\tab\tab return false;\par
+\tab\}\par
+\par
+\tab @Override\par
+\tab public boolean touchUp(int screenX, int screenY, int pointer, int button) \{\par
+\tab\tab // TODO Auto-generated method stub\par
+\tab\tab return false;\par
+\tab\}\par
+\par
+\tab @Override\par
+\tab public boolean touchDragged(int screenX, int screenY, int pointer) \{\par
+\tab\tab // TODO Auto-generated method stub\par
+\tab\tab return false;\par
+\tab\}\par
+\par
+\tab @Override\par
+\tab public boolean mouseMoved(int screenX, int screenY) \{\par
+\tab\tab // TODO Auto-generated method stub\par
+\tab\tab return false;\par
+\tab\}\par
+\tab\par
+\tab static class MyCoord\{\par
+\tab     private int X;\par
+\tab     private int Y;\par
+\par
+\tab     public MyCoord() \{\par
+\tab         this(0,0);\par
+\tab     \}        \par
+\tab     public MyCoord(int X, int Y) \{\par
+\tab         this.X = X;\par
+\tab         this.Y = Y;\par
+\tab     \}\par
+\tab     public int getX() \{\par
+\tab         return X;\par
+\tab     \}\par
+\tab     public int getY() \{\par
+\tab         return Y;\par
+\tab     \}\par
+\tab     public void setX(int X) \{\par
+\tab         this.X = X;\par
+\tab     \}\par
+\tab     public void setY(int Y) \{\par
+\tab         this.Y = Y;\par
+\tab     \}\par
+\tab     \par
+\tab     @Override\par
+\tab     public boolean equals(Object obj) \{\par
+\tab     \tab if(obj == this)\par
+\tab     \tab\tab return true;\par
+\tab     \tab if(obj == null || obj.getClass() != this.getClass())\par
+\tab     \tab\tab return false;\par
+\tab     \tab MyCoord coord1 = (MyCoord) obj;\par
+\tab     \tab return X == coord1.X && Y == coord1.Y;\par
+\tab     \}\par
+\tab     \par
+\tab\}\par
+\}\par
+\par
+}
+ 
