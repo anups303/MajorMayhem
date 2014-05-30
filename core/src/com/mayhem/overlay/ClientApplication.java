@@ -35,21 +35,17 @@ public class ClientApplication implements Application, ScribeClient{
 		endpoint.register();
 	}
 
-//	public void SendTestMessage(Id id, String msg) {
-//		routMessage(id, new TestMessage(msg));
-//	}
-//
+
 //	public void SendJoinMessage(Id id, JoinMessage msg) {
 //		routMessage(id, msg);
 //	}
 
-	private void routMessage(Id id, com.mayhem.overlay.Message msg) {
-		
+	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
 //		bootHandle = ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
 		endpoint.route(id, msg, null);
 	}
 
-	private void routeMyMsgDirect(NodeHandle nh, com.mayhem.overlay.Message msg) {
+	protected void routeMyMsgDirect(NodeHandle nh, com.mayhem.overlay.Message msg) {
 		endpoint.route(null, msg, nh);
 	}
 

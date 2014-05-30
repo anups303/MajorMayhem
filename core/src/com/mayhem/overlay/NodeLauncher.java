@@ -1,6 +1,5 @@
 package com.mayhem.overlay;
 
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,9 +16,13 @@ import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.standard.IPNodeIdFactory;
 
 public class NodeLauncher {
-	PastryNode node;
-	ClientApplication app;
+	protected PastryNode node;
+	protected ClientApplication app;
 
+	protected NodeLauncher(){
+		
+	}
+	
 	public NodeLauncher(int bindport, InetSocketAddress bootaddress,
 			Environment env, boolean isNewGame) throws Exception {
 
@@ -49,25 +52,6 @@ public class NodeLauncher {
 		System.out.println("Finished creating new node " + node);
 
 		app.subscribe();
-
-		if (!isNewGame) {
-			nidFactory = new IPNodeIdFactory(bootaddress.getAddress(),
-					bootaddress.getPort(), env);
-
-			Id coordinatorId = nidFactory.generateNodeId();
-
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(
-						System.in));
-				while (true) {
-					System.out.print("Message to RC:");
-
-//					app.SendTestMessage(coordinatorId, br.readLine());
-				}
-			} catch (Exception ex) {
-
-			}
-		}
 
 	}
 }
