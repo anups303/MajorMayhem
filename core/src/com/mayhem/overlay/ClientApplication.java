@@ -1,5 +1,18 @@
 package com.mayhem.overlay;
 
+import java.util.*;
+
+import org.omg.CORBA.SystemException;
+import org.omg.CORBA.portable.InputStream;
+import org.omg.CORBA.portable.OutputStream;
+
+import com.sun.corba.se.impl.protocol.giopmsgheaders.FragmentMessage;
+import com.sun.corba.se.impl.protocol.giopmsgheaders.MessageHandler;
+import com.sun.corba.se.impl.protocol.giopmsgheaders.ReplyMessage;
+import com.sun.corba.se.spi.ior.IOR;
+import com.sun.corba.se.spi.ior.iiop.GIOPVersion;
+import com.sun.corba.se.spi.servicecontext.ServiceContexts;
+
 import rice.p2p.commonapi.Application;
 import rice.p2p.commonapi.CancellableTask;
 import rice.p2p.commonapi.Endpoint;
@@ -14,6 +27,8 @@ import rice.p2p.scribe.ScribeContent;
 import rice.p2p.scribe.ScribeImpl;
 import rice.p2p.scribe.Topic;
 import rice.pastry.commonapi.PastryIdFactory;
+import rice.pastry.socket.SocketNodeHandle;
+import rice.pastry.socket.SocketNodeHandleFactory;
 import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.transport.SocketAdapter;
 
@@ -23,15 +38,17 @@ public class ClientApplication implements Application, ScribeClient {
 	CancellableTask publishTask;
 	Scribe scribe;
 	Topic topic;
+	String channelName;
+	protected List<Id> regionMembers;
 	protected Endpoint endpoint;
 
 	public ClientApplication(Node node, boolean isNewGame) {
 		this.isCoordinator = isNewGame;
+		this.regionMembers = new ArrayList<Id>();
 		this.node = node;
 		this.endpoint = node.buildEndpoint(this, "instance");
 		scribe = new ScribeImpl(node, "scribeInstance");
-		topic = new Topic(new PastryIdFactory(node.getEnvironment()),
-				"R#1Channel");
+		
 		endpoint.register();
 	}
 
@@ -58,20 +75,29 @@ public class ClientApplication implements Application, ScribeClient {
 		// }
 		// else
 
-		if (message instanceof com.mayhem.overlay.JoinMessage) {
-			com.mayhem.overlay.JoinMessage msg = (com.mayhem.overlay.JoinMessage) message;
-			System.out.println("Join Message received from:" + msg.getSender());
-			// this.SendTestMessage(msg.getSender(), "TestBack");
-		} else if (message instanceof com.mayhem.overlay.Message) {
+		if (message instanceof JoinMessage) {
+			JoinMessage msg = (JoinMessage) message;
+			this.regionMembers.add(msg.getSender());
+			System.out.println("Join:" + msg.getSender());
+			this.routMessage(msg.getSender(), new JoinReplyMessage(this.channelName));
+		}
+		else if (message instanceof JoinReplyMessage) {
+			JoinReplyMessage msg = (JoinReplyMessage) message;
+			System.out.println("JoinReply:" + msg.getChannelName());
+			this.subscribe(msg.getChannelName());
+		}
+		else if (message instanceof com.mayhem.overlay.Message) {
 			System.out.println(this + " received " + message);
-			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
+//			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
 
 			sendMulticast(message.toString());
 		}
-
 	}
 
-	public void subscribe() {
+	public void subscribe(String channelName) {
+		this.channelName = channelName;
+		topic = new Topic(new PastryIdFactory(node.getEnvironment()),
+				channelName);
 		scribe.subscribe(topic, this);
 	}
 
@@ -83,7 +109,8 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void update(NodeHandle handle, boolean joined) {
-
+		if (joined)
+			System.out.println("Subscribed on channel:"+handle);
 	}
 
 	public void deliver(Topic topic, ScribeContent content) {
@@ -116,15 +143,4 @@ public class ClientApplication implements Application, ScribeClient {
 		// endpoint.getLocalNodeHandle(), msg);
 		// scribe.publish(topic, message);
 	}
-
-	// public void deliver(Id id, Message message) {
-	// super.deliver(id, message);
-	//
-	// if (message instanceof overlay.Message) {
-	// System.out.println(this + " received " + message);
-	// overlay.Message msg = (overlay.Message) message;
-	//
-	// sendMulticast(message.toString());
-	// }
-	// }
 }

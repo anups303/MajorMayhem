@@ -27,9 +27,19 @@ public class TestNodeLauncher extends NodeLauncher {
 
 	public TestNodeLauncher(int bindport, InetSocketAddress bootaddress,
 			Environment env, boolean isNewGame) throws Exception {
-		super(bindport, bootaddress, env, new TestClientApplicationFactory(), isNewGame);
-		
-		
+		super(bindport, bootaddress, env, new TestClientApplicationFactory(),
+				isNewGame);
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+		if (isNewGame) {
+			System.out.println("Message to publish on scribe channel:");
+			String opt = br.readLine();
+			
+		} else {
+//			System.out.println("Message to publish on scribe channel:");
+		}
+
 	}
 
 	private static String getIpAsString(InetAddress address) {

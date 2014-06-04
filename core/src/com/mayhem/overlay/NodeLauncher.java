@@ -28,7 +28,6 @@ public class NodeLauncher {
 			Environment env, boolean isNewGame) throws Exception {
 		this(bindport, bootaddress, env, new ClientApplicationFactory(),
 				isNewGame);
-
 	}
 
 	public NodeLauncher(int bindport, InetSocketAddress bootaddress,
@@ -60,10 +59,6 @@ public class NodeLauncher {
 
 		System.out.println("Finished creating new node " + node);
 
-		app.subscribe();
-
-		
-
 		if (!isNewGame) {
 			
 			// Assume our bootstrapper is also the region controller
@@ -73,8 +68,11 @@ public class NodeLauncher {
 			// So we should talk to him
 			app.SendJoinMessage(this.regionController);
 		}
-		else
+		else{
+			app.subscribe(this.node.getId().toString());
 			this.regionController = node.getLocalHandle();
+		}
+			
 
 	}
 
