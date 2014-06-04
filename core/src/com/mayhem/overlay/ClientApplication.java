@@ -17,7 +17,7 @@ import rice.pastry.commonapi.PastryIdFactory;
 import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.transport.SocketAdapter;
 
-public class ClientApplication implements Application, ScribeClient{
+public class ClientApplication implements Application, ScribeClient {
 	boolean isCoordinator;
 	Node node;
 	CancellableTask publishTask;
@@ -35,17 +35,19 @@ public class ClientApplication implements Application, ScribeClient{
 		endpoint.register();
 	}
 
-
-//	public void SendJoinMessage(Id id, JoinMessage msg) {
-//		routMessage(id, msg);
-//	}
+	public void SendJoinMessage(NodeHandle coordinatorHandle) {
+		routeMessageDirect(coordinatorHandle,
+				new JoinMessage(this.node.getId()));
+	}
 
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
-//		bootHandle = ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
+		// bootHandle =
+		// ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
 		endpoint.route(id, msg, null);
 	}
 
-	protected void routeMyMsgDirect(NodeHandle nh, com.mayhem.overlay.Message msg) {
+	protected void routeMessageDirect(NodeHandle nh,
+			com.mayhem.overlay.Message msg) {
 		endpoint.route(null, msg, nh);
 	}
 
@@ -59,9 +61,8 @@ public class ClientApplication implements Application, ScribeClient{
 		if (message instanceof com.mayhem.overlay.JoinMessage) {
 			com.mayhem.overlay.JoinMessage msg = (com.mayhem.overlay.JoinMessage) message;
 			System.out.println("Join Message received from:" + msg.getSender());
-//			this.SendTestMessage(msg.getSender(), "TestBack");
-		} 
-		else if (message instanceof com.mayhem.overlay.Message) {
+			// this.SendTestMessage(msg.getSender(), "TestBack");
+		} else if (message instanceof com.mayhem.overlay.Message) {
 			System.out.println(this + " received " + message);
 			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
 
@@ -84,11 +85,12 @@ public class ClientApplication implements Application, ScribeClient{
 	public void update(NodeHandle handle, boolean joined) {
 
 	}
-	
+
 	public void deliver(Topic topic, ScribeContent content) {
-		System.out.println("ChannelContent received:" + topic + "," + content + ")");
+		System.out.println("ChannelContent received:" + topic + "," + content
+				+ ")");
 	}
-	
+
 	public boolean anycast(Topic topic, ScribeContent content) {
 		return true;
 	}
@@ -98,7 +100,7 @@ public class ClientApplication implements Application, ScribeClient{
 
 	public void childRemoved(Topic topic, NodeHandle child) {
 	}
-	
+
 	public void sendAnycast(String msg) {
 		// System.out.println("Node " + endpoint.getLocalNodeHandle()
 		// + " anycasting " + seqNum);
@@ -110,19 +112,19 @@ public class ClientApplication implements Application, ScribeClient{
 	public void sendMulticast(String msg) {
 		System.out.println("Node " + endpoint.getLocalNodeHandle()
 				+ " multicasting " + msg);
-//		ChannelContent message = new TestChannelContent(
-//				endpoint.getLocalNodeHandle(), msg);
-//		scribe.publish(topic, message);
+		// ChannelContent message = new TestChannelContent(
+		// endpoint.getLocalNodeHandle(), msg);
+		// scribe.publish(topic, message);
 	}
 
-//	public void deliver(Id id, Message message) {
-//		super.deliver(id, message);
-//		
-//		if (message instanceof overlay.Message) {
-//			System.out.println(this + " received " + message);
-//			overlay.Message msg = (overlay.Message) message;
-//
-//			sendMulticast(message.toString());
-//		}
-//	}
+	// public void deliver(Id id, Message message) {
+	// super.deliver(id, message);
+	//
+	// if (message instanceof overlay.Message) {
+	// System.out.println(this + " received " + message);
+	// overlay.Message msg = (overlay.Message) message;
+	//
+	// sendMulticast(message.toString());
+	// }
+	// }
 }
