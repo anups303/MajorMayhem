@@ -26,10 +26,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.mayhem.mediator.Mediator;
-import com.mayhem.overlay.test.TestNodeLauncher;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 //for randomization
 import java.util.*;
 
@@ -106,10 +103,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 		camera.update();
 
 		// for overlay configuration
-//		mediator = new Mediator();
-//		if (!mediator.JoinGame("192.168.0.102", 9001)) {
+		mediator = new Mediator();
+		
+//		if (!mediator.newGame()){
 //			// TODO: Let user know about it!
 //		}
+		
+		if (!mediator.joinGame("130.83.118.196", 9001)) {
+			// TODO: Let user know about it!
+		}
 	}
 
 	@Override
@@ -212,6 +214,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 				camera.update();
 				changed = true;
 			}
+		}
+		
+		if (changed){
+			mediator.updatePosition(((int) (posX + xVar)) / 32,(int) (posY + yVar) / 32);
 		}
 
 		if (keycode == Keys.SPACE) {

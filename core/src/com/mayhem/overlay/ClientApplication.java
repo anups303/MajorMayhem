@@ -48,13 +48,18 @@ public class ClientApplication implements Application, ScribeClient {
 		this.node = node;
 		this.endpoint = node.buildEndpoint(this, "instance");
 		scribe = new ScribeImpl(node, "scribeInstance");
-		
+
 		endpoint.register();
 	}
 
 	public void SendJoinMessage(NodeHandle coordinatorHandle) {
 		routeMessageDirect(coordinatorHandle,
 				new JoinMessage(this.node.getId()));
+	}
+
+	public void SendMovementMessage(NodeHandle coordinatorHandle, int x, int y) {
+		routeMessageDirect(coordinatorHandle,
+				new MovementMessage(this.node.getId(), x, y));
 	}
 
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
@@ -74,22 +79,27 @@ public class ClientApplication implements Application, ScribeClient {
 		// // sendAnycast();
 		// }
 		// else
+		if (message instanceof MovementMessage) {
+			MovementMessage msg = (MovementMessage) message;
 
-		if (message instanceof JoinMessage) {
+			System.out.println("Movement:" + msg.getSender() + " to ("
+					+ msg.getX() + "," + msg.getY() + ")");
+
+
+		} else if (message instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) message;
 			this.regionMembers.add(msg.getSender());
 			System.out.println("Join:" + msg.getSender());
-			this.routMessage(msg.getSender(), new JoinReplyMessage(this.channelName));
-		}
-		else if (message instanceof JoinReplyMessage) {
+			this.routMessage(msg.getSender(), new JoinReplyMessage(
+					this.channelName, this.node.getId()));
+		} else if (message instanceof JoinReplyMessage) {
 			JoinReplyMessage msg = (JoinReplyMessage) message;
 			System.out.println("JoinReply:" + msg.getChannelName());
 			this.subscribe(msg.getChannelName());
-		}
-		else if (message instanceof com.mayhem.overlay.Message) {
+		} else if (message instanceof com.mayhem.overlay.Message) {
 			System.out.println(this + " received " + message);
-//			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
-
+			// com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message)
+			// message;
 			sendMulticast(message.toString());
 		}
 	}
@@ -110,7 +120,9 @@ public class ClientApplication implements Application, ScribeClient {
 
 	public void update(NodeHandle handle, boolean joined) {
 		if (joined)
-			System.out.println("Subscribed on channel:"+handle);
+			// TODO: may be useful to change the way of bootstrapping and
+			// problem of finding coordinator id
+			System.out.println("Added to leafset:" + handle);
 	}
 
 	public void deliver(Topic topic, ScribeContent content) {

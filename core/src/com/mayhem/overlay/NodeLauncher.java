@@ -60,25 +60,24 @@ public class NodeLauncher {
 		System.out.println("Finished creating new node " + node);
 
 		if (!isNewGame) {
-			
+
 			// Assume our bootstrapper is also the region controller
 			this.regionController = regionControllerFinder(bootaddress);
 
-			// We successfully connected to the overlay and find the Coordinator.
+			// We successfully connected to the overlay and find the
+			// Coordinator.
 			// So we should talk to him
 			app.SendJoinMessage(this.regionController);
-		}
-		else{
+		} else {
 			app.subscribe(this.node.getId().toString());
 			this.regionController = node.getLocalHandle();
 		}
-			
 
 	}
 
 	protected NodeHandle regionControllerFinder(
 			InetSocketAddress regionControllAddress) {
-		
+
 		LeafSet leafSet = node.getLeafSet();
 
 		try {
@@ -101,5 +100,13 @@ public class NodeLauncher {
 		}
 
 		return null;
+	}
+
+	public ClientApplication getApplication() {
+		return app;
+	}
+
+	public void SendCoordinatorMovementMessage(int x, int y) {
+		app.SendMovementMessage(regionController, x, y);
 	}
 }
