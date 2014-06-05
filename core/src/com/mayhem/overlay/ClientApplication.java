@@ -33,6 +33,7 @@ import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.transport.SocketAdapter;
 
 public class ClientApplication implements Application, ScribeClient {
+	List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
 	boolean isCoordinator;
 	Node node;
 	CancellableTask publishTask;
@@ -50,6 +51,11 @@ public class ClientApplication implements Application, ScribeClient {
 		scribe = new ScribeImpl(node, "scribeInstance");
 
 		endpoint.register();
+	}
+
+	public void addActionAcknowledgmentListener(
+			IActionAcknowledgmentListner toAdd) {
+		actionAcknowledgmentlisteners.add(toAdd);
 	}
 
 	public void SendJoinMessage(NodeHandle coordinatorHandle) {
@@ -85,6 +91,19 @@ public class ClientApplication implements Application, ScribeClient {
 			System.out.println("Movement:" + msg.getSender() + " to ("
 					+ msg.getX() + "," + msg.getY() + ")");
 
+			// TODO: validating movement
+			// in case of valid movement, coordinator must acknowledge it.
+
+			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
+					msg.getMessageId(), true));
+		} else if (message instanceof ActionAcknowledgmentMessage) {
+			ActionAcknowledgmentMessage msg = (ActionAcknowledgmentMessage) message;
+			if (msg.getValid()) {
+				System.out.println("action " + msg.getActionMessageId()
+						+ " is valid");
+			}
+			for (IActionAcknowledgmentListner hl : actionAcknowledgmentlisteners)
+				hl.acknowledgmentReceived(msg.getActionMessageId());
 
 		} else if (message instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) message;

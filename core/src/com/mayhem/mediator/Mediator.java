@@ -40,7 +40,7 @@ public class Mediator {
 
 			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment,
 					false);
-			
+
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
 			// TODO: log the exception
@@ -50,7 +50,7 @@ public class Mediator {
 	}
 
 	public boolean newGame() {
-		
+
 		try {
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			int bootport, bindport = 9001;
@@ -65,8 +65,9 @@ public class Mediator {
 			InetSocketAddress bootaddress = new InetSocketAddress(bootaddr,
 					bootport);
 
-			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment, true);
-			
+			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment,
+					true);
+
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
 			return false;
@@ -76,9 +77,7 @@ public class Mediator {
 	}
 
 	public boolean updatePosition(int x, int y) {
-		
 		nodeLauncher.SendCoordinatorMovementMessage(x, y);
-		
 		return true;
 	}
 }

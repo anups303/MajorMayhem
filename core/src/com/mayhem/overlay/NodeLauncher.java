@@ -15,7 +15,7 @@ import rice.pastry.socket.SocketNodeHandle;
 import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.standard.IPNodeIdFactory;
 
-public class NodeLauncher {
+public class NodeLauncher implements IActionAcknowledgmentListner {
 	protected PastryNode node;
 	protected NodeHandle regionController;
 	protected ClientApplication app;
@@ -59,6 +59,7 @@ public class NodeLauncher {
 
 		System.out.println("Finished creating new node " + node);
 
+		app.addActionAcknowledgmentListener(this);
 		if (!isNewGame) {
 
 			// Assume our bootstrapper is also the region controller
@@ -108,5 +109,9 @@ public class NodeLauncher {
 
 	public void SendCoordinatorMovementMessage(int x, int y) {
 		app.SendMovementMessage(regionController, x, y);
+	}
+
+	public void acknowledgmentReceived(long messageid) {
+		System.out.println("ack received for message:" + messageid);
 	}
 }
