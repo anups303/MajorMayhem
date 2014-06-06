@@ -105,9 +105,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 		// for overlay configuration
 		mediator = new Mediator();
 
-		// if (!mediator.newGame()){
-		// // TODO: Let user know about it!
-		// }
+//		 if (!mediator.newGame()){
+//		 // TODO: Let user know about it!
+//		 }
 
 		if (!mediator.joinGame("130.83.116.225", 9001)) {
 			// TODO: Let user know about it!
@@ -178,7 +178,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 		// tile width and height set at 32 px
 		float moveAmount = 32.0f;
 		Cell cell = null;
-		boolean changed = false;
 		float xVar = 0, yVar = 0;
 
 		switch (keycode) {

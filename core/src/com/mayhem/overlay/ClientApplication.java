@@ -6,6 +6,7 @@ import org.omg.CORBA.SystemException;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 
+import com.mayhem.overlay.test.TestChannelContent;
 import com.sun.corba.se.impl.protocol.giopmsgheaders.FragmentMessage;
 import com.sun.corba.se.impl.protocol.giopmsgheaders.MessageHandler;
 import com.sun.corba.se.impl.protocol.giopmsgheaders.ReplyMessage;
@@ -103,6 +104,10 @@ public class ClientApplication implements Application, ScribeClient {
 			
 			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
 					msg.getMessageId(), true));
+			
+			//Then Coordinator has to propagate new game state on the channel
+			scribe.publish(topic, new TestChannelContent(this.node.getLocalNodeHandle(), "ttt"));
+			
 		} else if (message instanceof ActionAcknowledgmentMessage) {
 			ActionAcknowledgmentMessage msg = (ActionAcknowledgmentMessage) message;
 			if (msg.getValid()) {

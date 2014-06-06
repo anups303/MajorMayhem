@@ -138,7 +138,6 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			recievedAcks.add(messageId);
 			lock.notifyAll();
 		}
-
 		System.out.println("ack received for message:" + messageId);
 	}
 }
