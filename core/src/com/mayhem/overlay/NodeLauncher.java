@@ -3,7 +3,10 @@ package com.mayhem.overlay;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.*;
 
+import rice.p2p.commonapi.Id;
 import rice.pastry.leafset.LeafSet;
 import rice.environment.Environment;
 import rice.pastry.NodeHandle;
@@ -16,9 +19,12 @@ import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.standard.IPNodeIdFactory;
 
 public class NodeLauncher implements IActionAcknowledgmentListner {
+	private final Object lock = new Object();
+
 	protected PastryNode node;
 	protected NodeHandle regionController;
 	protected ClientApplication app;
+	protected List<Long> recievedAcks;
 
 	protected NodeLauncher() {
 
@@ -61,7 +67,6 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 
 		app.addActionAcknowledgmentListener(this);
 		if (!isNewGame) {
-
 			// Assume our bootstrapper is also the region controller
 			this.regionController = regionControllerFinder(bootaddress);
 
@@ -74,6 +79,7 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			this.regionController = node.getLocalHandle();
 		}
 
+		recievedAcks = new ArrayList();
 	}
 
 	protected NodeHandle regionControllerFinder(
@@ -107,11 +113,32 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		return app;
 	}
 
-	public void SendCoordinatorMovementMessage(int x, int y) {
-		app.SendMovementMessage(regionController, x, y);
+	public boolean SendCoordinatorMovementMessage(int x, int y) {
+		long msgId = this.SendCoordinatorMovementMessageAsync(x, y);
+		try {
+			synchronized (lock) {
+				lock.wait();
+				for(int i=0;i<recievedAcks.size();i++)
+					if (msgId == recievedAcks.get(i))
+						return true;
+			}
+			return false;
+
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
-	public void acknowledgmentReceived(long messageid) {
-		System.out.println("ack received for message:" + messageid);
+	public long SendCoordinatorMovementMessageAsync(int x, int y) {
+		return app.SendMovementMessage(regionController, x, y);
+	}
+
+	public void acknowledgmentReceived(long messageId) {
+		synchronized (lock) {
+			recievedAcks.add(messageId);
+			lock.notifyAll();
+		}
+
+		System.out.println("ack received for message:" + messageId);
 	}
 }

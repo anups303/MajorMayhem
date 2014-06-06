@@ -104,12 +104,12 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 
 		// for overlay configuration
 		mediator = new Mediator();
-		
-//		if (!mediator.newGame()){
-//			// TODO: Let user know about it!
-//		}
-		
-		if (!mediator.joinGame("130.83.118.196", 9001)) {
+
+		// if (!mediator.newGame()){
+		// // TODO: Let user know about it!
+		// }
+
+		if (!mediator.joinGame("130.83.116.225", 9001)) {
 			// TODO: Let user know about it!
 		}
 	}
@@ -200,24 +200,17 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 		cell = collisionLayer.getCell(((int) (posX + xVar)) / 32,
 				(int) (posY + yVar) / 32);
 
-		if (cell == null) {
+		if (cell == null
+				|| (cell != null && !cell.getTile().getProperties()
+						.containsKey("blocked"))) {
 			posX += xVar;
 			posY += yVar;
-			camera.translate(xVar, yVar);
-			camera.update();
-			changed = true;
-		} else {
-			if (!cell.getTile().getProperties().containsKey("blocked")) {
-				posX += xVar;
-				posY += yVar;
+			if (mediator.updatePosition(((int) (posX + xVar)) / 32,
+					(int) (posY + yVar) / 32)) {
 				camera.translate(xVar, yVar);
 				camera.update();
-				changed = true;
 			}
-		}
-		
-		if (changed){
-			mediator.updatePosition(((int) (posX + xVar)) / 32,(int) (posY + yVar) / 32);
+			
 		}
 
 		if (keycode == Keys.SPACE) {

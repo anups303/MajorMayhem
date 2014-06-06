@@ -9,7 +9,6 @@ import rice.environment.Environment;
 
 import com.mayhem.overlay.ClientApplication;
 import com.mayhem.overlay.NodeLauncher;
-import com.mayhem.overlay.test.TestNodeLauncher;
 
 public class Mediator {
 	protected Environment environment;
@@ -77,7 +76,6 @@ public class Mediator {
 	}
 
 	public boolean updatePosition(int x, int y) {
-		nodeLauncher.SendCoordinatorMovementMessage(x, y);
-		return true;
+		return nodeLauncher.SendCoordinatorMovementMessage(x, y);
 	}
 }

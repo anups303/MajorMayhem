@@ -63,9 +63,11 @@ public class ClientApplication implements Application, ScribeClient {
 				new JoinMessage(this.node.getId()));
 	}
 
-	public void SendMovementMessage(NodeHandle coordinatorHandle, int x, int y) {
-		routeMessageDirect(coordinatorHandle,
-				new MovementMessage(this.node.getId(), x, y));
+	public long SendMovementMessage(NodeHandle coordinatorHandle, int x, int y) {
+		MovementMessage msg = new MovementMessage(this.node.getId(), x, y);
+		routeMessageDirect(coordinatorHandle, msg);
+
+		return msg.getMessageId();
 	}
 
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
@@ -93,7 +95,12 @@ public class ClientApplication implements Application, ScribeClient {
 
 			// TODO: validating movement
 			// in case of valid movement, coordinator must acknowledge it.
-
+			
+//			try {
+//				this.node.getEnvironment().getTimeSource().sleep(1000);
+//			} catch (Exception w) {
+//			}
+			
 			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
 					msg.getMessageId(), true));
 		} else if (message instanceof ActionAcknowledgmentMessage) {
