@@ -23,33 +23,33 @@ import com.mayhem.overlay.ClientApplication;
 import com.mayhem.overlay.ClientApplicationFactory;
 import com.mayhem.overlay.NodeLauncher;
 
-public class TestNodeLauncher extends NodeLauncher {
+public class TestNodeLauncher {//extends NodeLauncher {
 
-	public TestNodeLauncher(int bindport, InetSocketAddress bootaddress,
-			Environment env, boolean isNewGame) throws Exception {
-		super(bindport, bootaddress, env, new TestClientApplicationFactory(),
-				isNewGame);
-
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-		if (isNewGame) {
-			System.out.println("Message to publish on scribe channel:");
-			String opt = br.readLine();
-			
-		} else {
+//	public TestNodeLauncher(int bindport, InetSocketAddress bootaddress,
+//			Environment env, boolean isNewGame) throws Exception {
+//		super(bindport, bootaddress, env, new TestClientApplicationFactory(),
+//				isNewGame);
+//
+//		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//
+//		if (isNewGame) {
 //			System.out.println("Message to publish on scribe channel:");
-		}
-
-	}
-
-	private static String getIpAsString(InetAddress address) {
-		byte[] ipAddress = address.getAddress();
-		StringBuffer str = new StringBuffer();
-		for (int i = 0; i < ipAddress.length; i++) {
-			if (i > 0)
-				str.append('.');
-			str.append(ipAddress[i] & 0xFF);
-		}
-		return str.toString();
-	}
+//			String opt = br.readLine();
+//			
+//		} else {
+////			System.out.println("Message to publish on scribe channel:");
+//		}
+//
+//	}
+//
+//	private static String getIpAsString(InetAddress address) {
+//		byte[] ipAddress = address.getAddress();
+//		StringBuffer str = new StringBuffer();
+//		for (int i = 0; i < ipAddress.length; i++) {
+//			if (i > 0)
+//				str.append('.');
+//			str.append(ipAddress[i] & 0xFF);
+//		}
+//		return str.toString();
+//	}
 }

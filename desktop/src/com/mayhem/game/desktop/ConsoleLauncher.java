@@ -51,8 +51,8 @@ public class ConsoleLauncher {
 			InetSocketAddress bootaddress = new InetSocketAddress(bootaddr,
 					bootport);
 
-			TestNodeLauncher dt = new TestNodeLauncher(bindport, bootaddress, env,
-					newGame);
+//			TestNodeLauncher dt = new TestNodeLauncher(bindport, bootaddress, env,
+//					newGame);
 		} catch (Exception e) {
 		}
 	}

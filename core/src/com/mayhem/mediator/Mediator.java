@@ -4,11 +4,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import rice.environment.Environment;
+import rice.p2p.commonapi.Id;
 
 import com.mayhem.overlay.ClientApplication;
+import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.NodeLauncher;
+import com.mayhem.overlay.PlayerState;
 
 public class Mediator {
 	protected Environment environment;
@@ -16,7 +20,8 @@ public class Mediator {
 	protected ClientApplication app;
 
 	// Create and configure a new environment for overlay
-	public boolean joinGame(String bootIp, int bootport) {
+	public boolean joinGame(String bootIp, int bootport,
+			IRegionStateListener regionStateListener) {
 
 		int bindport;
 
@@ -38,7 +43,7 @@ public class Mediator {
 					bootport);
 
 			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment,
-					false);
+					false, regionStateListener);
 
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
@@ -48,7 +53,7 @@ public class Mediator {
 		return true;
 	}
 
-	public boolean newGame() {
+	public boolean newGame(IRegionStateListener regionStateListener) {
 
 		try {
 			String ip = InetAddress.getLocalHost().getHostAddress();
@@ -65,7 +70,7 @@ public class Mediator {
 					bootport);
 
 			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment,
-					true);
+					true, regionStateListener);
 
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
@@ -77,5 +82,9 @@ public class Mediator {
 
 	public boolean updatePosition(int x, int y) {
 		return nodeLauncher.SendCoordinatorMovementMessage(x, y);
+	}
+
+	public Id GetNodeId() {
+		return nodeLauncher.GetNodeId();
 	}
 }

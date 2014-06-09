@@ -14,4 +14,15 @@ public class RegionStateChannelContent extends ChannelContent {
 	public List<PlayerState> getList() {
 		return this.list;
 	}
+
+	public String toString() {
+		String result = "";
+
+		for (PlayerState player : list) {
+			result += player.getId() + "(" + player.getX() + ","
+					+ player.getY() + "), ";
+		}
+
+		return result;
+	}
 }

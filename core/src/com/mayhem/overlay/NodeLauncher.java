@@ -31,14 +31,14 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public NodeLauncher(int bindport, InetSocketAddress bootaddress,
-			Environment env, boolean isNewGame) throws Exception {
+			Environment env, boolean isNewGame, IRegionStateListener regionStateListener) throws Exception {
 		this(bindport, bootaddress, env, new ClientApplicationFactory(),
-				isNewGame);
+				isNewGame, regionStateListener);
 	}
 
 	public NodeLauncher(int bindport, InetSocketAddress bootaddress,
 			Environment env, ClientApplicationFactory clientApplicationFactory,
-			boolean isNewGame) throws Exception {
+			boolean isNewGame, IRegionStateListener regionStateListener) throws Exception {
 
 		NodeIdFactory nidFactory = new IPNodeIdFactory(
 				InetAddress.getLocalHost(), bindport, env);
@@ -79,6 +79,7 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			this.regionController = node.getLocalHandle();
 		}
 
+		app.addRegionStateListener(regionStateListener);
 		recievedAcks = new ArrayList();
 	}
 
@@ -138,6 +139,10 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			recievedAcks.add(messageId);
 			lock.notifyAll();
 		}
-		System.out.println("ack received for message:" + messageId);
+//		System.out.println("ack received for message:" + messageId);
+	}
+
+	public Id GetNodeId(){
+		return node.getId();
 	}
 }

@@ -34,17 +34,21 @@ import rice.pastry.socket.SocketPastryNodeFactory;
 import rice.pastry.transport.SocketAdapter;
 
 public class ClientApplication implements Application, ScribeClient {
-	List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
-	boolean isCoordinator;
-	Node node;
-	CancellableTask publishTask;
-	Scribe scribe;
-	Topic topic;
-	String channelName;
+	protected List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
+	protected List<IRegionStateListener> regionStateListeners = new ArrayList<IRegionStateListener>();
+
+	protected boolean isCoordinator;
+	protected Node node;
+	protected CancellableTask publishTask;
+	protected Scribe scribe;
+	protected Topic topic;
+	protected String channelName;
 	protected List<Id> regionMembers;
 	protected Endpoint endpoint;
+	private List<PlayerState> playerStateList;
 
 	public ClientApplication(Node node, boolean isNewGame) {
+		this.playerStateList = new ArrayList<PlayerState>();
 		this.isCoordinator = isNewGame;
 		this.regionMembers = new ArrayList<Id>();
 		this.node = node;
@@ -57,6 +61,10 @@ public class ClientApplication implements Application, ScribeClient {
 	public void addActionAcknowledgmentListener(
 			IActionAcknowledgmentListner toAdd) {
 		actionAcknowledgmentlisteners.add(toAdd);
+	}
+
+	public void addRegionStateListener(IRegionStateListener toAdd) {
+		regionStateListeners.add(toAdd);
 	}
 
 	public void SendJoinMessage(NodeHandle coordinatorHandle) {
@@ -91,28 +99,36 @@ public class ClientApplication implements Application, ScribeClient {
 		if (message instanceof MovementMessage) {
 			MovementMessage msg = (MovementMessage) message;
 
-			System.out.println("Movement:" + msg.getSender() + " to ("
-					+ msg.getX() + "," + msg.getY() + ")");
+			// System.out.println("Movement:" + msg.getSender() + " to ("
+			// + msg.getX() + "," + msg.getY() + ")");
 
 			// TODO: validating movement
 			// in case of valid movement, coordinator must acknowledge it.
-			
-//			try {
-//				this.node.getEnvironment().getTimeSource().sleep(1000);
-//			} catch (Exception w) {
-//			}
-			
+
+			// try {
+			// this.node.getEnvironment().getTimeSource().sleep(1000);
+			// } catch (Exception w) {
+			// }
+
 			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
 					msg.getMessageId(), true));
-			
-			//Then Coordinator has to propagate new game state on the channel
-			scribe.publish(topic, new TestChannelContent(this.node.getLocalNodeHandle(), "ttt"));
-			
+
+			// Then Coordinator has to propagate new game state on the channel
+			for (PlayerState player : this.playerStateList) {
+				if (player.getId() == msg.getSender()) {
+					player.setX(msg.getX());
+					player.setY(msg.getY());
+
+					List<PlayerState> tmp = new ArrayList<PlayerState>();
+					tmp.add(player);
+					scribe.publish(topic, new RegionStateChannelContent(tmp));
+				}
+			}
 		} else if (message instanceof ActionAcknowledgmentMessage) {
 			ActionAcknowledgmentMessage msg = (ActionAcknowledgmentMessage) message;
 			if (msg.getValid()) {
-				System.out.println("action " + msg.getActionMessageId()
-						+ " is valid");
+				// System.out.println("action " + msg.getActionMessageId()
+				// + " is valid");
 			}
 			for (IActionAcknowledgmentListner hl : actionAcknowledgmentlisteners)
 				hl.acknowledgmentReceived(msg.getActionMessageId());
@@ -120,6 +136,7 @@ public class ClientApplication implements Application, ScribeClient {
 		} else if (message instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) message;
 			this.regionMembers.add(msg.getSender());
+			this.playerStateList.add(new PlayerState(msg.getSender()));
 			System.out.println("Join:" + msg.getSender());
 			this.routMessage(msg.getSender(), new JoinReplyMessage(
 					this.channelName, this.node.getId()));
@@ -157,8 +174,13 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void deliver(Topic topic, ScribeContent content) {
-		System.out.println("ChannelContent received:" + topic + "," + content
-				+ ")");
+		if (content instanceof RegionStateChannelContent) {
+			RegionStateChannelContent msg = (RegionStateChannelContent) content;
+			for (IRegionStateListener rsl : regionStateListeners)
+				rsl.regionStateReceived(msg.getList());
+		}
+//		System.out.println("ChannelContent received:" + topic + "," + content
+//				+ ")");
 	}
 
 	public boolean anycast(Topic topic, ScribeContent content) {

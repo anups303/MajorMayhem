@@ -26,6 +26,9 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.mayhem.mediator.Mediator;
+import com.mayhem.overlay.IRegionStateListener;
+
+import com.mayhem.overlay.PlayerState;
 
 //for randomization
 import java.util.*;
@@ -35,13 +38,16 @@ import javax.swing.JOptionPane;
 
 import rice.environment.Environment;
 
-public class Bomber extends ApplicationAdapter implements InputProcessor {
+public class Bomber extends ApplicationAdapter implements InputProcessor,
+		IRegionStateListener {
 	private Mediator mediator;
 
 	// for sprite
 	private SpriteBatch batch;
 	private Texture texture, bombTex;
 	private Sprite sprite, bombSprite;
+
+	private List<Sprite> players;
 
 	// for input
 	private float posX, posY;
@@ -102,15 +108,23 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 		camera.position.y = posY;
 		camera.update();
 
+		// for players
+
+		players = new ArrayList<Sprite>();
+
 		// for overlay configuration
 		mediator = new Mediator();
 
-//		 if (!mediator.newGame()){
-//		 // TODO: Let user know about it!
-//		 }
-
-		if (!mediator.joinGame("130.83.116.225", 9001)) {
-			// TODO: Let user know about it!
+		boolean coordinator = true;
+		coordinator = false;
+		if (coordinator) {
+			if (!mediator.newGame(this)) {
+				// TODO: Let user know about it!
+			}
+		} else {
+			if (!mediator.joinGame("192.168.0.100", 9001, this)) {
+				// TODO: Let user know about it!
+			}
 		}
 	}
 
@@ -209,7 +223,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 				camera.translate(xVar, yVar);
 				camera.update();
 			}
-			
+
 		}
 
 		if (keycode == Keys.SPACE) {
@@ -252,5 +266,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public boolean scrolled(int amount) {
 		return false;
+	}
+
+	@Override
+	public void regionStateReceived(List<PlayerState> list) {
+		for (PlayerState player : list) {
+			if (player.getId() != mediator.GetNodeId()) {
+				// TODO: Render each player in their new position
+			}
+		}
 	}
 }
