@@ -80,6 +80,15 @@ public class ClientApplication implements Application, ScribeClient {
 		return msg.getMessageId();
 	}
 
+	public long SendBombPlacementMessage(NodeHandle coordinatorHandle, int x,
+			int y) {
+		BombPlacementMessage msg = new BombPlacementMessage(this.node.getId(),
+				x, y);
+		routeMessageDirect(coordinatorHandle, msg);
+
+		return msg.getMessageId();
+	}
+
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
 		// bootHandle =
 		// ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
@@ -100,9 +109,6 @@ public class ClientApplication implements Application, ScribeClient {
 		if (message instanceof MovementMessage) {
 			MovementMessage msg = (MovementMessage) message;
 
-			// System.out.println("Movement:" + msg.getSender() + " to ("
-			// + msg.getX() + "," + msg.getY() + ")");
-
 			// TODO: validating movement
 			// in case of valid movement, coordinator must acknowledge it.
 
@@ -122,7 +128,8 @@ public class ClientApplication implements Application, ScribeClient {
 
 					List<PlayerState> tmp = new ArrayList<PlayerState>();
 					tmp.add(player);
-					scribe.publish(topic, new RegionStateChannelContent(tmp));
+					scribe.publish(topic, new RegionStateChannelContent(tmp,
+							null));
 				}
 			}
 		} else if (message instanceof ActionAcknowledgmentMessage) {
@@ -133,6 +140,20 @@ public class ClientApplication implements Application, ScribeClient {
 			}
 			for (IActionAcknowledgmentListner hl : actionAcknowledgmentlisteners)
 				hl.acknowledgmentReceived(msg.getActionMessageId());
+
+		} else if (message instanceof BombPlacementMessage) {
+			BombPlacementMessage msg = (BombPlacementMessage) message;
+
+			// TODO: validating the bomb
+			// in case of valid bomb placement, coordinator must acknowledge it.
+
+			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
+					msg.getMessageId(), true));
+
+			// Then Coordinator has to propagate new game state on the channel
+			List<BombState> tmp = new ArrayList<BombState>();
+			tmp.add(new BombState(msg.getSender(), msg.getX(), msg.getY()));
+			scribe.publish(topic, new RegionStateChannelContent(null, tmp));
 
 		} else if (message instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) message;
@@ -178,7 +199,7 @@ public class ClientApplication implements Application, ScribeClient {
 		if (content instanceof RegionStateChannelContent) {
 			RegionStateChannelContent msg = (RegionStateChannelContent) content;
 			for (IRegionStateListener rsl : regionStateListeners)
-				rsl.regionStateReceived(msg.getList());
+				rsl.regionStateReceived(msg.getPlayerList(), msg.getBombList());
 		}
 		// System.out.println("ChannelContent received:" + topic + "," + content
 		// + ")");

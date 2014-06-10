@@ -117,20 +117,17 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public boolean SendCoordinatorMovementMessage(int x, int y) {
-//		// Assume that it's not necessary to validate coordinator.
-//		if (app.isCoordinator)
-//			return true;
-		
 		long msgId = this.SendCoordinatorMovementMessageAsync(x, y);
 		try {
 			synchronized (lock) {
-				lock.wait();
-				for (int i = 0; i < recievedAcks.size(); i++)
-					if (msgId == recievedAcks.get(i))
-						return true;
+				// We will wait until the ACK receives
+				while (true) {
+					lock.wait();
+					for (int i = 0; i < recievedAcks.size(); i++)
+						if (msgId == recievedAcks.get(i))
+							return true;
+				}
 			}
-			return false;
-
 		} catch (Exception ex) {
 			return false;
 		}
@@ -145,7 +142,28 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			recievedAcks.add(messageId);
 			lock.notifyAll();
 		}
-		// System.out.println("ack received for message:" + messageId);
+	}
+
+	public boolean SendCoordinatorBombPlacementMessage(int x, int y) {
+		long msgId = this.SendCoordinatorBombPlacementMessageAsync(x, y);
+		try {
+			synchronized (lock) {
+				// We will wait until the ACK receives
+				while (true) {
+					lock.wait();
+					for (int i = 0; i < recievedAcks.size(); i++)
+						if (msgId == recievedAcks.get(i))
+							return true;
+				}
+			}
+
+		} catch (Exception ex) {
+			return false;
+		}
+	}
+
+	public long SendCoordinatorBombPlacementMessageAsync(int x, int y) {
+		return app.SendBombPlacementMessage(regionController, x, y);
 	}
 
 	public Id GetNodeId() {

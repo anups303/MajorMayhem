@@ -4,8 +4,9 @@ import rice.p2p.commonapi.Id;
 
 public class BombPlacementMessage extends Message {
 	private static final long serialVersionUID = 4266857723473558476L;
-	Id sender;
-	int x, y;
+	private Id sender;
+	private long messageId;
+	private int x, y;
 	
 	public BombPlacementMessage(Id sender, int x, int y) {
 		this.sender = sender;
@@ -23,5 +24,9 @@ public class BombPlacementMessage extends Message {
 
 	public int getY() {
 		return this.y;
+	}
+	
+	public long getMessageId() {
+		return messageId;
 	}
 }

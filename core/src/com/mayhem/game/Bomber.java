@@ -26,6 +26,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.mayhem.mediator.Mediator;
+import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.PlayerState;
 
@@ -40,13 +41,23 @@ import rice.p2p.commonapi.Id;
 
 public class Bomber extends ApplicationAdapter implements InputProcessor,
 		IRegionStateListener {
+	class BombInfo {
+		Sprite sprite;
+		long timer;
+
+		public BombInfo(Sprite sprite, long timer) {
+			this.sprite = sprite;
+			this.timer = timer;
+		}
+	}
+
 	private Mediator mediator;
 
 	// for sprite
 	private SpriteBatch batch;
 	private Texture texture, bombTex, textureOfOtherPlayers;
 	private Sprite sprite;
-	private HashMap<Long, Sprite> bombSprite;
+	private HashMap<Long, BombInfo> bombSprite;
 	private HashMap<Id, Sprite> players;
 
 	// for input
@@ -65,10 +76,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	// for collision detection
 	private TiledMapTileLayer collisionLayer;
 
-	private float dt = 0;
-	private long elapsedTime = 0;
-	private float bombX, bombY;
-
 	@Override
 	public void create() {
 		// for map
@@ -85,7 +92,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				Gdx.files.internal("Bman_f_f01.png"));
 		sprite = new Sprite(texture);
 		bombTex = new Texture(Gdx.files.internal("Bomb_f01.png"));
-		bombSprite = new HashMap<Long, Sprite>();
+		bombSprite = new HashMap<Long, BombInfo>();
 
 		// for sprite position
 		float w = Gdx.graphics.getWidth();
@@ -109,20 +116,19 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		camera.update();
 
 		// for players
-
 		players = new HashMap<Id, Sprite>();
 
 		// for overlay configuration
 		mediator = new Mediator();
 
 		boolean coordinator = true;
-		// coordinator = false;
+		 coordinator = false;
 		if (coordinator) {
 			if (!mediator.newGame(this)) {
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame("130.83.114.42", 9001, this)) {
+			if (!mediator.joinGame("130.83.112.83", 9001, this)) {
 				// TODO: Let user know about it!
 			}
 		}
@@ -142,12 +148,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		// dt = Gdx.graphics.getDeltaTime();
-		// JOptionPane.showMessageDialog(null, dt);
-
 		// for input
 		sprite.setPosition(posX, posY);
-		// bombSprite.setPosition(posX, posY);
 
 		// for camera
 		batch.setProjectionMatrix(camera.combined);
@@ -166,30 +168,29 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 		sprite.draw(batch);
 
-		// if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-		// bombX = sprite.getX();
-		// bombY = sprite.getY();
-		// for (elapsedTime = 0; elapsedTime < 3; elapsedTime += dt) {
-		// dt = Gdx.graphics.getDeltaTime();
-		// bombSprite.setPosition(bombX, bombY);
-		// bombSprite.draw(batch);
-		// }
-		// }
-
-		if (System.currentTimeMillis() >= elapsedTime) {
-			bombSprite.clear();
-		} else {
+		if (bombSprite.size() > 0) {
+			List<Long> toBeRemoved = new ArrayList<Long>();
 			Iterator<Long> itr = bombSprite.keySet().iterator();
-			while (itr.hasNext())
-				bombSprite.get(itr.next()).draw(batch);
+			while (itr.hasNext()) {
+				long key = itr.next();
+				BombInfo bi = bombSprite.get(key);
+				if (System.currentTimeMillis() >= bi.timer) {
+					toBeRemoved.add(key);
+					// TODO: render the bomb explosion
+					
+//					bi.sprite.getX()
+//					bi.sprite.getY()
+				} else {
+					bi.sprite.draw(batch);
+				}
+			}
+			if (toBeRemoved.size() > 0) {
+				for (long id : toBeRemoved)
+					bombSprite.remove(id);
+			}
 		}
 		batch.end();
 
-		/*
-		 * batch.begin(); if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-		 * bombSprite.setPosition(sprite.getX(),sprite.getY());
-		 * bombSprite.draw(batch); } batch.end();
-		 */
 	}
 
 	@Override
@@ -244,19 +245,21 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		if (keycode == Keys.SPACE) {
-
-			Sprite bomb = new Sprite(bombTex);
-			bomb.setSize(32, 32);
-			bomb.setPosition(posX, posY);
-
-			bombSprite.put(new Random().nextLong(), bomb);
-
-			elapsedTime = System.currentTimeMillis() + 5000;
-
-			// JOptionPane.showMessageDialog(null,
-			// ((int)posX)/32+"+"+(992-(int)posY)/32);
+			if (mediator.bombPlacement(((int) (posX)) / moveAmount,
+					(int) (posY) / moveAmount)) {
+				addBomb(posX, posY);
+			}
 		}
 		return true;
+	}
+
+	protected void addBomb(float posX, float posY) {
+		Sprite bomb = new Sprite(bombTex);
+		bomb.setSize(32, 32);
+		bomb.setPosition(posX, posY);
+
+		bombSprite.put(new Random().nextLong(),
+				new BombInfo(bomb, System.currentTimeMillis() + 5000));
 	}
 
 	@Override
@@ -299,23 +302,33 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	@Override
-	public void regionStateReceived(List<PlayerState> list) {
-		synchronized (players) {
-			for (PlayerState player : list) {
-				if (player.getId() != mediator.GetNodeId()) {
-					// TODO: Render each player in their new position
-					Sprite p = findPlayerById(player.getId());
-					if (p == null) {
-						p = new Sprite(textureOfOtherPlayers);
-						this.players.put(player.getId(), p);
-					}
-					p.setSize(32.0f, 64.0f);
-					p.setPosition(player.getX() * 32, player.getY() * 32);
+	public void regionStateReceived(List<PlayerState> playerList,
+			List<BombState> bombList) {
+		if (playerList != null)
+			synchronized (players) {
+				for (PlayerState player : playerList) {
+					if (player.getId() != mediator.GetNodeId()) {
+						// TODO: Render each player in their new position
+						Sprite p = findPlayerById(player.getId());
+						if (p == null) {
+							p = new Sprite(textureOfOtherPlayers);
+							this.players.put(player.getId(), p);
+						}
+						p.setSize(32.0f, 64.0f);
+						p.setPosition(player.getX() * 32, player.getY() * 32);
 
-					System.out.println("position changes:(" + player.getX()
-							* 32 + "," + player.getY() * 32 + ")");
+						System.out.println("position changes:(" + player.getX()
+								* 32 + "," + player.getY() * 32 + ")");
+					}
 				}
 			}
-		}
+		if (bombList != null)
+			synchronized (bombList) {
+				for (BombState bomb : bombList) {
+					System.out.println("Bomb placement:(" + bomb.getX()
+							* 32 + "," + bomb.getY() * 32 + ")");
+					addBomb(bomb.getX()*32, bomb.getY()*32);
+				}
+			}
 	}
 }
