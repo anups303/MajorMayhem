@@ -44,9 +44,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	// for sprite
 	private SpriteBatch batch;
-	private Texture texture, bombTex;
-	private Sprite sprite, bombSprite;
-
+	private Texture texture, bombTex, textureOfOtherPlayers;
+	private Sprite sprite;
+	private HashMap<Long, Sprite> bombSprite;
 	private HashMap<Id, Sprite> players;
 
 	// for input
@@ -66,7 +66,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private TiledMapTileLayer collisionLayer;
 
 	private float dt = 0;
-	private float elapsedTime = 0;
+	private long elapsedTime = 0;
 	private float bombX, bombY;
 
 	@Override
@@ -81,10 +81,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for sprite
 		batch = new SpriteBatch();
 		texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));
+		textureOfOtherPlayers = new Texture(
+				Gdx.files.internal("Bman_f_f01.png"));
 		sprite = new Sprite(texture);
 		bombTex = new Texture(Gdx.files.internal("Bomb_f01.png"));
-		bombSprite = new Sprite(bombTex);
-		bombSprite.setSize(32, 32);
+		bombSprite = new HashMap<Long, Sprite>();
 
 		// for sprite position
 		float w = Gdx.graphics.getWidth();
@@ -98,7 +99,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			posY = 32 * (rand.nextInt(29) + 1);
 		}
 		sprite.setPosition(posX, posY);
-		bombSprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
 
 		// for camera
@@ -116,7 +116,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		mediator = new Mediator();
 
 		boolean coordinator = true;
-		coordinator = false;
+		// coordinator = false;
 		if (coordinator) {
 			if (!mediator.newGame(this)) {
 				// TODO: Let user know about it!
@@ -133,6 +133,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for sprite
 		batch.dispose();
 		texture.dispose();
+		textureOfOtherPlayers.dispose();
 	}
 
 	@Override
@@ -164,14 +165,23 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				players.get(itr.next()).draw(batch);
 		}
 		sprite.draw(batch);
-		if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-			bombX = sprite.getX();
-			bombY = sprite.getY();
-			for (elapsedTime = 0; elapsedTime < 3; elapsedTime += dt) {
-				dt = Gdx.graphics.getDeltaTime();
-				bombSprite.setPosition(bombX, bombY);
-				bombSprite.draw(batch);
-			}
+
+		// if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+		// bombX = sprite.getX();
+		// bombY = sprite.getY();
+		// for (elapsedTime = 0; elapsedTime < 3; elapsedTime += dt) {
+		// dt = Gdx.graphics.getDeltaTime();
+		// bombSprite.setPosition(bombX, bombY);
+		// bombSprite.draw(batch);
+		// }
+		// }
+
+		if (System.currentTimeMillis() >= elapsedTime) {
+			bombSprite.clear();
+		} else {
+			Iterator<Long> itr = bombSprite.keySet().iterator();
+			while (itr.hasNext())
+				bombSprite.get(itr.next()).draw(batch);
 		}
 		batch.end();
 
@@ -234,6 +244,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		if (keycode == Keys.SPACE) {
+
+			Sprite bomb = new Sprite(bombTex);
+			bomb.setSize(32, 32);
+			bomb.setPosition(posX, posY);
+
+			bombSprite.put(new Random().nextLong(), bomb);
+
+			elapsedTime = System.currentTimeMillis() + 5000;
+
 			// JOptionPane.showMessageDialog(null,
 			// ((int)posX)/32+"+"+(992-(int)posY)/32);
 		}
@@ -287,7 +306,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 					// TODO: Render each player in their new position
 					Sprite p = findPlayerById(player.getId());
 					if (p == null) {
-						p = new Sprite(texture);
+						p = new Sprite(textureOfOtherPlayers);
 						this.players.put(player.getId(), p);
 					}
 					p.setSize(32.0f, 64.0f);
