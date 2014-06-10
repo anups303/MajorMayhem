@@ -31,14 +31,16 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public NodeLauncher(int bindport, InetSocketAddress bootaddress,
-			Environment env, boolean isNewGame, IRegionStateListener regionStateListener) throws Exception {
+			Environment env, boolean isNewGame,
+			IRegionStateListener regionStateListener) throws Exception {
 		this(bindport, bootaddress, env, new ClientApplicationFactory(),
 				isNewGame, regionStateListener);
 	}
 
 	public NodeLauncher(int bindport, InetSocketAddress bootaddress,
 			Environment env, ClientApplicationFactory clientApplicationFactory,
-			boolean isNewGame, IRegionStateListener regionStateListener) throws Exception {
+			boolean isNewGame, IRegionStateListener regionStateListener)
+			throws Exception {
 
 		NodeIdFactory nidFactory = new IPNodeIdFactory(
 				InetAddress.getLocalHost(), bindport, env);
@@ -115,11 +117,15 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public boolean SendCoordinatorMovementMessage(int x, int y) {
+//		// Assume that it's not necessary to validate coordinator.
+//		if (app.isCoordinator)
+//			return true;
+		
 		long msgId = this.SendCoordinatorMovementMessageAsync(x, y);
 		try {
 			synchronized (lock) {
 				lock.wait();
-				for(int i=0;i<recievedAcks.size();i++)
+				for (int i = 0; i < recievedAcks.size(); i++)
 					if (msgId == recievedAcks.get(i))
 						return true;
 			}
@@ -139,10 +145,10 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			recievedAcks.add(messageId);
 			lock.notifyAll();
 		}
-//		System.out.println("ack received for message:" + messageId);
+		// System.out.println("ack received for message:" + messageId);
 	}
 
-	public Id GetNodeId(){
+	public Id GetNodeId() {
 		return node.getId();
 	}
 }

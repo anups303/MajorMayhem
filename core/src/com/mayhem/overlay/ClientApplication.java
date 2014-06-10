@@ -56,6 +56,7 @@ public class ClientApplication implements Application, ScribeClient {
 		scribe = new ScribeImpl(node, "scribeInstance");
 
 		endpoint.register();
+		this.playerStateList.add(new PlayerState(node.getId()));
 	}
 
 	public void addActionAcknowledgmentListener(
@@ -179,8 +180,8 @@ public class ClientApplication implements Application, ScribeClient {
 			for (IRegionStateListener rsl : regionStateListeners)
 				rsl.regionStateReceived(msg.getList());
 		}
-//		System.out.println("ChannelContent received:" + topic + "," + content
-//				+ ")");
+		// System.out.println("ChannelContent received:" + topic + "," + content
+		// + ")");
 	}
 
 	public boolean anycast(Topic topic, ScribeContent content) {

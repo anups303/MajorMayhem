@@ -27,7 +27,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.IRegionStateListener;
-
 import com.mayhem.overlay.PlayerState;
 
 //for randomization
@@ -37,6 +36,7 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 import rice.environment.Environment;
+import rice.p2p.commonapi.Id;
 
 public class Bomber extends ApplicationAdapter implements InputProcessor,
 		IRegionStateListener {
@@ -47,7 +47,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private Texture texture, bombTex;
 	private Sprite sprite, bombSprite;
 
-	private List<Sprite> players;
+	private HashMap<Id, Sprite> players;
 
 	// for input
 	private float posX, posY;
@@ -110,7 +110,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		// for players
 
-		players = new ArrayList<Sprite>();
+		players = new HashMap<Id, Sprite>();
 
 		// for overlay configuration
 		mediator = new Mediator();
@@ -122,7 +122,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame("192.168.0.100", 9001, this)) {
+			if (!mediator.joinGame("130.83.114.42", 9001, this)) {
 				// TODO: Let user know about it!
 			}
 		}
@@ -156,6 +156,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		tiledMapRenderer.render();
 
 		batch.begin();
+
+		synchronized (players) {
+
+			Iterator<Id> itr = players.keySet().iterator();
+			while (itr.hasNext())
+				players.get(itr.next()).draw(batch);
+		}
 		sprite.draw(batch);
 		if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
 			bombX = sprite.getX();
@@ -190,7 +197,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	@Override
 	public boolean keyDown(int keycode) {
 		// tile width and height set at 32 px
-		float moveAmount = 32.0f;
+		int moveAmount = 32;
 		Cell cell = null;
 		float xVar = 0, yVar = 0;
 
@@ -210,16 +217,16 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		// convert pixel position to tile position
-		cell = collisionLayer.getCell(((int) (posX + xVar)) / 32,
-				(int) (posY + yVar) / 32);
+		cell = collisionLayer.getCell(((int) (posX + xVar)) / moveAmount,
+				(int) (posY + yVar) / moveAmount);
 
 		if (cell == null
 				|| (cell != null && !cell.getTile().getProperties()
 						.containsKey("blocked"))) {
 			posX += xVar;
 			posY += yVar;
-			if (mediator.updatePosition(((int) (posX + xVar)) / 32,
-					(int) (posY + yVar) / 32)) {
+			if (mediator.updatePosition(((int) (posX)) / moveAmount,
+					(int) (posY) / moveAmount)) {
 				camera.translate(xVar, yVar);
 				camera.update();
 			}
@@ -268,11 +275,27 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		return false;
 	}
 
+	protected Sprite findPlayerById(Id id) {
+		return players.get(id);
+	}
+
 	@Override
 	public void regionStateReceived(List<PlayerState> list) {
-		for (PlayerState player : list) {
-			if (player.getId() != mediator.GetNodeId()) {
-				// TODO: Render each player in their new position
+		synchronized (players) {
+			for (PlayerState player : list) {
+				if (player.getId() != mediator.GetNodeId()) {
+					// TODO: Render each player in their new position
+					Sprite p = findPlayerById(player.getId());
+					if (p == null) {
+						p = new Sprite(texture);
+						this.players.put(player.getId(), p);
+					}
+					p.setSize(32.0f, 64.0f);
+					p.setPosition(player.getX() * 32, player.getY() * 32);
+
+					System.out.println("position changes:(" + player.getX()
+							* 32 + "," + player.getY() * 32 + ")");
+				}
 			}
 		}
 	}
