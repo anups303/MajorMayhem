@@ -51,12 +51,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 	}
 
+	private int moveAmount = 32;
 	private Mediator mediator;
 
 	// for sprite
 	private SpriteBatch batch;
-	private Texture texture, bombTex, textureOfOtherPlayers;
-	private Sprite sprite;
+	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture;
+	private Sprite sprite, flameSprite;
 	private HashMap<Long, BombInfo> bombSprite;
 	private HashMap<Id, Sprite> players;
 
@@ -87,10 +88,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		// for sprite
 		batch = new SpriteBatch();
+		flameTexture = new Texture(Gdx.files.internal("Explosion_CN.png"));
 		texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));
 		textureOfOtherPlayers = new Texture(
 				Gdx.files.internal("Bman_f_f01.png"));
 		sprite = new Sprite(texture);
+		flameSprite = new Sprite(flameTexture);
+
 		bombTex = new Texture(Gdx.files.internal("Bomb_f01.png"));
 		bombSprite = new HashMap<Long, BombInfo>();
 
@@ -98,12 +102,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
 		sprite.setSize(32.0f, 64.0f);
-		posX = 32 * (rand.nextInt(29) + 1);
-		posY = 32 * (rand.nextInt(29) + 1);
+		posX = moveAmount * (rand.nextInt(29) + 1);
+		posY = moveAmount * (rand.nextInt(29) + 1);
 		// check whether overlapping with another block
-		while (collisionLayer.getCell((int) posX / 32, (int) posY / 32) != null) {
-			posX = 32 * (rand.nextInt(29) + 1);
-			posY = 32 * (rand.nextInt(29) + 1);
+		while (collisionLayer.getCell((int) posX / moveAmount, (int) posY
+				/ moveAmount) != null) {
+			posX = moveAmount * (rand.nextInt(29) + 1);
+			posY = moveAmount * (rand.nextInt(29) + 1);
 		}
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
@@ -122,13 +127,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		mediator = new Mediator();
 
 		boolean coordinator = true;
-		 coordinator = false;
+		coordinator = false;
 		if (coordinator) {
 			if (!mediator.newGame(this)) {
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame("130.83.112.83", 9001, this)) {
+			if (!mediator.joinGame("10.0.1.4", 9001, this)) {
 				// TODO: Let user know about it!
 			}
 		}
@@ -175,13 +180,50 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				long key = itr.next();
 				BombInfo bi = bombSprite.get(key);
 				if (System.currentTimeMillis() >= bi.timer) {
-					toBeRemoved.add(key);
+					if (bi.sprite == flameSprite)
+						toBeRemoved.add(key);
 					// TODO: render the bomb explosion
-					
-//					bi.sprite.getX()
-//					bi.sprite.getY()
+					float x = bi.sprite.getX(), y = bi.sprite.getY();
+
+					flameSprite.setPosition(bi.sprite.getX(), bi.sprite.getY());
+					flameSprite.draw(batch);
+
+					bi.sprite = flameSprite;
+
+					bi.timer += 1000;
 				} else {
 					bi.sprite.draw(batch);
+					if (bi.sprite == flameSprite) {
+						Sprite right = new Sprite(flameTexture);
+						right.setPosition(bi.sprite.getX() + moveAmount,
+								bi.sprite.getY());
+						right.draw(batch);
+
+						Sprite left = new Sprite(flameTexture);
+						left.setPosition(bi.sprite.getX() - moveAmount,
+								bi.sprite.getY());
+						left.draw(batch);
+
+						Sprite down = new Sprite(flameTexture);
+						down.setPosition(bi.sprite.getX(), bi.sprite.getY()
+								+ moveAmount);
+						down.draw(batch);
+
+						Sprite up = new Sprite(flameTexture);
+						up.setPosition(bi.sprite.getX(), bi.sprite.getY()
+								- moveAmount);
+						up.draw(batch);
+
+//						if (collisionLayer
+//								.getCell(
+//										((int) (bi.sprite.getX())) / moveAmount,
+//										(int) (bi.sprite.getY()) / moveAmount)
+//								.getTile().getProperties()
+//								.containsKey("destroyable")) {
+////							collisionLayer.
+//						}
+					}
+
 				}
 			}
 			if (toBeRemoved.size() > 0) {
@@ -208,7 +250,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	@Override
 	public boolean keyDown(int keycode) {
 		// tile width and height set at 32 px
-		int moveAmount = 32;
+
 		Cell cell = null;
 		float xVar = 0, yVar = 0;
 
@@ -259,7 +301,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		bomb.setPosition(posX, posY);
 
 		bombSprite.put(new Random().nextLong(),
-				new BombInfo(bomb, System.currentTimeMillis() + 5000));
+				new BombInfo(bomb, System.currentTimeMillis() + 2000));
 	}
 
 	@Override
@@ -315,19 +357,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 							this.players.put(player.getId(), p);
 						}
 						p.setSize(32.0f, 64.0f);
-						p.setPosition(player.getX() * 32, player.getY() * 32);
-
-						System.out.println("position changes:(" + player.getX()
-								* 32 + "," + player.getY() * 32 + ")");
+						p.setPosition(player.getX() * moveAmount, player.getY()
+								* moveAmount);
 					}
 				}
 			}
 		if (bombList != null)
 			synchronized (bombList) {
 				for (BombState bomb : bombList) {
-					System.out.println("Bomb placement:(" + bomb.getX()
-							* 32 + "," + bomb.getY() * 32 + ")");
-					addBomb(bomb.getX()*32, bomb.getY()*32);
+					addBomb(bomb.getX() * moveAmount, bomb.getY() * moveAmount);
 				}
 			}
 	}
