@@ -133,10 +133,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame("10.0.1.4", 9001, this)) {
+			if (!mediator.joinGame("130.83.116.175", 9001, this)) {
 				// TODO: Let user know about it!
 			}
 		}
+		
+		mediator.updatePosition(((int) (posX)) / moveAmount,
+				(int) (posY) / moveAmount);
 	}
 
 	@Override
@@ -180,11 +183,16 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				long key = itr.next();
 				BombInfo bi = bombSprite.get(key);
 				if (System.currentTimeMillis() >= bi.timer) {
-					if (bi.sprite == flameSprite)
+					if (bi.sprite == flameSprite) {
 						toBeRemoved.add(key);
-					// TODO: render the bomb explosion
-					float x = bi.sprite.getX(), y = bi.sprite.getY();
+						int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
+								.getY() / moveAmount;
 
+						explodeCellAt(x + 1, y);
+						explodeCellAt(x - 1, y);
+						explodeCellAt(x, y + 1);
+						explodeCellAt(x, y - 1);
+					}
 					flameSprite.setPosition(bi.sprite.getX(), bi.sprite.getY());
 					flameSprite.draw(batch);
 
@@ -213,17 +221,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 						up.setPosition(bi.sprite.getX(), bi.sprite.getY()
 								- moveAmount);
 						up.draw(batch);
-
-//						if (collisionLayer
-//								.getCell(
-//										((int) (bi.sprite.getX())) / moveAmount,
-//										(int) (bi.sprite.getY()) / moveAmount)
-//								.getTile().getProperties()
-//								.containsKey("destroyable")) {
-////							collisionLayer.
-//						}
 					}
-
 				}
 			}
 			if (toBeRemoved.size() > 0) {
@@ -232,7 +230,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			}
 		}
 		batch.end();
+	}
 
+	protected void explodeCellAt(int x, int y) {
+		Cell c = collisionLayer.getCell(x, y);
+		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
+			collisionLayer.setCell(x, y, null);
+
+		}
 	}
 
 	@Override
