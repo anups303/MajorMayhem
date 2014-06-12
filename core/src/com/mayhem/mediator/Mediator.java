@@ -28,6 +28,8 @@ public class Mediator {
 		try {
 			bindport = 9001;
 
+			if (bootIp == null)
+				bootIp = InetAddress.getLocalHost().getHostAddress();
 			// More than one instance of game running on a same machine
 			if (bootIp.equalsIgnoreCase(InetAddress.getLocalHost()
 					.getHostAddress()))
@@ -81,14 +83,17 @@ public class Mediator {
 	}
 
 	public boolean updatePosition(int x, int y) {
-		return nodeLauncher.SendCoordinatorMovementMessage(x, y);
+		if (nodeLauncher != null)
+			return nodeLauncher.SendCoordinatorMovementMessage(x, y);
+		else
+			return false;
 	}
 
 	public boolean bombPlacement(int x, int y) {
 		return nodeLauncher.SendCoordinatorBombPlacementMessage(x, y);
 	}
-	
-	public void leaveGame(){
+
+	public void leaveGame() {
 		nodeLauncher.leaveGame();
 	}
 

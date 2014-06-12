@@ -132,7 +132,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame("192.168.0.103", 9001, this)) {
+			if (!mediator.joinGame(null, 9001, this)) {
 				// TODO: Let user know about it!
 			}
 		}
