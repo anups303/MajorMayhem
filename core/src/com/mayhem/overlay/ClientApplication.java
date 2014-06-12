@@ -89,6 +89,15 @@ public class ClientApplication implements Application, ScribeClient {
 		return msg.getMessageId();
 	}
 
+	public void SendLeaveGameMessage(NodeHandle coordinatorHandle) {
+		this.SendLeaveGameMessage(coordinatorHandle, this.node.getId());
+	}
+
+	protected void SendLeaveGameMessage(NodeHandle coordinatorHandle, Id sender) {
+		LeaveMessage msg = new LeaveMessage(sender);
+		routeMessageDirect(coordinatorHandle, msg);
+	}
+
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
 		// bootHandle =
 		// ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
@@ -120,18 +129,17 @@ public class ClientApplication implements Application, ScribeClient {
 			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
 					msg.getMessageId(), true));
 
-			// Then Coordinator has to propagate new game state on the channel
 			for (PlayerState player : this.playerStateList) {
 				if (player.getId() == msg.getSender()) {
 					player.setX(msg.getX());
 					player.setY(msg.getY());
-
-					List<PlayerState> tmp = new ArrayList<PlayerState>();
-					tmp.add(player);
-					scribe.publish(topic, new RegionStateChannelContent(tmp,
-							null));
+					break;
 				}
 			}
+			// Then Coordinator has to propagate new game state on the channel
+			scribe.publish(topic, new RegionStateChannelContent(
+					this.playerStateList, null));
+
 		} else if (message instanceof ActionAcknowledgmentMessage) {
 			ActionAcknowledgmentMessage msg = (ActionAcknowledgmentMessage) message;
 			if (msg.getValid()) {
@@ -161,11 +169,28 @@ public class ClientApplication implements Application, ScribeClient {
 			this.playerStateList.add(new PlayerState(msg.getSender()));
 			System.out.println("Join:" + msg.getSender());
 			this.routMessage(msg.getSender(), new JoinReplyMessage(
-					this.channelName, this.node.getId()));
+					this.channelName, this.node.getId(), this.playerStateList));
 		} else if (message instanceof JoinReplyMessage) {
 			JoinReplyMessage msg = (JoinReplyMessage) message;
 			System.out.println("JoinReply:" + msg.getChannelName());
 			this.subscribe(msg.getChannelName());
+			for (IRegionStateListener rsl : regionStateListeners)
+				rsl.regionStateReceived(msg.getPlayerStateList(), null);
+		} else if (message instanceof LeaveMessage) {
+			LeaveMessage msg = (LeaveMessage) message;
+			try {
+				this.regionMembers.remove(msg.getSender());
+				for (int i = 0; i < this.playerStateList.size(); i++)
+					if (this.playerStateList.get(i).getId() == msg.getSender()) {
+						this.playerStateList.remove(i);
+						break;
+					}
+				System.out.println("Leave:" + msg.getSender());
+				for (IRegionStateListener rsl : regionStateListeners)
+					rsl.regionStateReceived(this.playerStateList, null);
+			} catch (Exception ex) {
+
+			}
 		} else if (message instanceof com.mayhem.overlay.Message) {
 			System.out.println(this + " received " + message);
 			// com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message)
@@ -193,6 +218,11 @@ public class ClientApplication implements Application, ScribeClient {
 			// TODO: may be useful to change the way of bootstrapping and
 			// problem of finding coordinator id
 			System.out.println("Added to leafset:" + handle);
+		else {
+			if (isCoordinator)
+				this.SendLeaveGameMessage(this.node.getLocalNodeHandle(),
+						handle.getId());
+		}
 	}
 
 	public void deliver(Topic topic, ScribeContent content) {
@@ -213,6 +243,11 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void childRemoved(Topic topic, NodeHandle child) {
+		if (isCoordinator) {
+			System.out.println("childRemoved");
+			this.SendLeaveGameMessage(this.node.getLocalNodeHandle(),
+					child.getId());
+		}
 	}
 
 	public void sendAnycast(String msg) {
@@ -230,4 +265,5 @@ public class ClientApplication implements Application, ScribeClient {
 		// endpoint.getLocalNodeHandle(), msg);
 		// scribe.publish(topic, message);
 	}
+
 }

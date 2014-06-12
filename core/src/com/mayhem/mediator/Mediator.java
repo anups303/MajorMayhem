@@ -87,6 +87,10 @@ public class Mediator {
 	public boolean bombPlacement(int x, int y) {
 		return nodeLauncher.SendCoordinatorBombPlacementMessage(x, y);
 	}
+	
+	public void leaveGame(){
+		nodeLauncher.leaveGame();
+	}
 
 	public Id GetNodeId() {
 		return nodeLauncher.GetNodeId();

@@ -126,25 +126,25 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for overlay configuration
 		mediator = new Mediator();
 
-		boolean coordinator = true;
-		coordinator = false;
+		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
 		if (coordinator) {
 			if (!mediator.newGame(this)) {
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame("130.83.116.175", 9001, this)) {
+			if (!mediator.joinGame("192.168.0.103", 9001, this)) {
 				// TODO: Let user know about it!
 			}
 		}
-		
-		mediator.updatePosition(((int) (posX)) / moveAmount,
-				(int) (posY) / moveAmount);
+
+		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
+				/ moveAmount);
 	}
 
 	@Override
 	public void dispose() {
 		// for sprite
+		mediator.leaveGame();
 		batch.dispose();
 		texture.dispose();
 		textureOfOtherPlayers.dispose();
@@ -366,6 +366,22 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 								* moveAmount);
 					}
 				}
+
+				Iterator<Id> itr = players.keySet().iterator();
+				List<Id> toBeRemoved = new ArrayList<Id>();
+				while (itr.hasNext()) {
+					Id key = itr.next();
+					boolean found = false;
+					for (PlayerState player : playerList)
+						if (player.getId() == key)
+							found = true;
+					if (!found)
+						toBeRemoved.add(key);
+				}
+				if (toBeRemoved.size() > 0)
+					for (Id id : toBeRemoved)
+						players.remove(id);
+
 			}
 		if (bombList != null)
 			synchronized (bombList) {

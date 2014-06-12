@@ -169,4 +169,8 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	public Id GetNodeId() {
 		return node.getId();
 	}
+
+	public void leaveGame() {
+		app.SendLeaveGameMessage(regionController);
+	}
 }
