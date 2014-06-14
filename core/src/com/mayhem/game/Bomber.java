@@ -15,7 +15,7 @@ import com.badlogic.gdx.InputProcessor;
 
 //for camera
 import com.badlogic.gdx.graphics.OrthographicCamera;
-
+import com.badlogic.gdx.maps.MapObjects;
 //for map
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -29,6 +29,8 @@ import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.PlayerState;
+
+import com.mayhem.overlay.Region;
 
 //for randomization
 import java.util.*;
@@ -110,14 +112,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			posX = moveAmount * (rand.nextInt(29) + 1);
 			posY = moveAmount * (rand.nextInt(29) + 1);
 		}
+		posX = posY = moveAmount;
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
 
 		// for camera
 		camera = new OrthographicCamera(w, h);
 		camera.setToOrtho(false);
-		camera.position.x = posX;
-		camera.position.y = posY;
+		camera.position.x = posX + moveAmount * 12;
+		camera.position.y = posY + moveAmount * 9;
 		camera.update();
 
 		// for players
@@ -236,7 +239,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		Cell c = collisionLayer.getCell(x, y);
 		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
 			collisionLayer.setCell(x, y, null);
-
 		}
 	}
 
@@ -255,7 +257,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	@Override
 	public boolean keyDown(int keycode) {
 		// tile width and height set at 32 px
-
 		Cell cell = null;
 		float xVar = 0, yVar = 0;
 
@@ -281,12 +282,23 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		if (cell == null
 				|| (cell != null && !cell.getTile().getProperties()
 						.containsKey("blocked"))) {
+
+			int xMod = ((int) (posX / moveAmount)) / 18;
+			int yMod = ((int) (posY / moveAmount)) / 18;
 			posX += xVar;
 			posY += yVar;
 			if (mediator.updatePosition(((int) (posX)) / moveAmount,
 					(int) (posY) / moveAmount)) {
-				camera.translate(xVar, yVar);
-				camera.update();
+
+				sprite.setPosition(posX, posY);
+
+				if ((((int) (posX / moveAmount)) / 20) != xMod
+						|| (((int) (posY / moveAmount)) / 20) != yMod) {
+					// Change the region controller
+
+					camera.translate(xVar * 20, yVar * 20);
+					camera.update();
+				}
 			}
 
 		}
@@ -349,8 +361,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	@Override
-	public void regionStateReceived(List<PlayerState> playerList,
-			List<BombState> bombList) {
+	public void regionStateReceived(Region region) {
+		List<PlayerState> playerList = region.getPlayers();
+		List<BombState> bombList = region.getBombs();
 		if (playerList != null)
 			synchronized (players) {
 				for (PlayerState player : playerList) {

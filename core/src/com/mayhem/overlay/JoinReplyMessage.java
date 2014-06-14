@@ -1,20 +1,17 @@
 package com.mayhem.overlay;
 
-import java.util.List;
-
 import rice.p2p.commonapi.Id;
 
 public class JoinReplyMessage extends Message {
 	private static final long serialVersionUID = 2582711063525648800L;
 	String channelName;
 	Id coordinatorId;
-	private List<PlayerState> playerStateList;
+	private Region region;
 
-	public JoinReplyMessage(String channelName, Id coordinatorId,
-			List<PlayerState> playerStateList) {
+	public JoinReplyMessage(String channelName, Id coordinatorId, Region region) {
 		this.channelName = channelName;
 		this.coordinatorId = coordinatorId;
-		this.playerStateList = playerStateList;
+		this.region = region;
 	}
 
 	public String getChannelName() {
@@ -25,8 +22,8 @@ public class JoinReplyMessage extends Message {
 		return coordinatorId;
 	}
 
-	public List<PlayerState> getPlayerStateList() {
-		return playerStateList;
+	public Region getRegion() {
+		return this.region;
 	}
 
 }

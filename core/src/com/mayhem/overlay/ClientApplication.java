@@ -37,6 +37,9 @@ public class ClientApplication implements Application, ScribeClient {
 	protected List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
 	protected List<IRegionStateListener> regionStateListeners = new ArrayList<IRegionStateListener>();
 
+	protected NodeHandle rightCoordinator, leftCoordinator, topCoordinator,
+			bottomCoordinator;
+
 	protected boolean isCoordinator;
 	protected Node node;
 	protected CancellableTask publishTask;
@@ -45,10 +48,10 @@ public class ClientApplication implements Application, ScribeClient {
 	protected String channelName;
 	protected List<Id> regionMembers;
 	protected Endpoint endpoint;
-	private List<PlayerState> playerStateList;
+	protected Region region;
 
 	public ClientApplication(Node node, boolean isNewGame) {
-		this.playerStateList = new ArrayList<PlayerState>();
+		this.region = new Region();
 		this.isCoordinator = isNewGame;
 		this.regionMembers = new ArrayList<Id>();
 		this.node = node;
@@ -56,7 +59,7 @@ public class ClientApplication implements Application, ScribeClient {
 		scribe = new ScribeImpl(node, "scribeInstance");
 
 		endpoint.register();
-		this.playerStateList.add(new PlayerState(node.getId()));
+		this.region.addPlayer(new PlayerState(node.getId()));
 	}
 
 	public void addActionAcknowledgmentListener(
@@ -129,7 +132,7 @@ public class ClientApplication implements Application, ScribeClient {
 			this.routMessage(msg.getSender(), new ActionAcknowledgmentMessage(
 					msg.getMessageId(), true));
 
-			for (PlayerState player : this.playerStateList) {
+			for (PlayerState player : this.region.getPlayers()) {
 				if (player.getId() == msg.getSender()) {
 					player.setX(msg.getX());
 					player.setY(msg.getY());
@@ -137,8 +140,7 @@ public class ClientApplication implements Application, ScribeClient {
 				}
 			}
 			// Then Coordinator has to propagate new game state on the channel
-			scribe.publish(topic, new RegionStateChannelContent(
-					this.playerStateList, null));
+			scribe.publish(topic, new RegionStateChannelContent(this.region));
 
 		} else if (message instanceof ActionAcknowledgmentMessage) {
 			ActionAcknowledgmentMessage msg = (ActionAcknowledgmentMessage) message;
@@ -159,42 +161,41 @@ public class ClientApplication implements Application, ScribeClient {
 					msg.getMessageId(), true));
 
 			// Then Coordinator has to propagate new game state on the channel
-			List<BombState> tmp = new ArrayList<BombState>();
-			tmp.add(new BombState(msg.getSender(), msg.getX(), msg.getY()));
-			scribe.publish(topic, new RegionStateChannelContent(null, tmp));
+			region.bombs.add(new BombState(msg.getSender(), msg.getX(), msg
+					.getY()));
+			scribe.publish(topic, new RegionStateChannelContent(region));
 
 		} else if (message instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) message;
 			this.regionMembers.add(msg.getSender());
-			this.playerStateList.add(new PlayerState(msg.getSender()));
+			this.region.addPlayer(new PlayerState(msg.getSender()));
 			System.out.println("Join:" + msg.getSender());
 			this.routMessage(msg.getSender(), new JoinReplyMessage(
-					this.channelName, this.node.getId(), this.playerStateList));
+					this.channelName, this.node.getId(), this.region));
 		} else if (message instanceof JoinReplyMessage) {
 			JoinReplyMessage msg = (JoinReplyMessage) message;
 			System.out.println("JoinReply:" + msg.getChannelName());
 			this.subscribe(msg.getChannelName());
 			for (IRegionStateListener rsl : regionStateListeners)
-				rsl.regionStateReceived(msg.getPlayerStateList(), null);
+				rsl.regionStateReceived(msg.getRegion());
 		} else if (message instanceof LeaveMessage) {
 			LeaveMessage msg = (LeaveMessage) message;
 			try {
 				this.regionMembers.remove(msg.getSender());
-				for (int i = 0; i < this.playerStateList.size(); i++)
-					if (this.playerStateList.get(i).getId() == msg.getSender()) {
-						this.playerStateList.remove(i);
+				for (int i = 0; i < this.region.getPlayers().size(); i++)
+					if (this.region.getPlayers().get(i).getId() == msg
+							.getSender()) {
+						this.region.getPlayers().remove(i);
 						break;
 					}
 				System.out.println("Leave:" + msg.getSender());
 				for (IRegionStateListener rsl : regionStateListeners)
-					rsl.regionStateReceived(this.playerStateList, null);
+					rsl.regionStateReceived(this.region);
 			} catch (Exception ex) {
 
 			}
 		} else if (message instanceof com.mayhem.overlay.Message) {
 			System.out.println(this + " received " + message);
-			// com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message)
-			// message;
 			sendMulticast(message.toString());
 		}
 	}
@@ -229,7 +230,7 @@ public class ClientApplication implements Application, ScribeClient {
 		if (content instanceof RegionStateChannelContent) {
 			RegionStateChannelContent msg = (RegionStateChannelContent) content;
 			for (IRegionStateListener rsl : regionStateListeners)
-				rsl.regionStateReceived(msg.getPlayerList(), msg.getBombList());
+				rsl.regionStateReceived(msg.getRegion());
 		}
 		// System.out.println("ChannelContent received:" + topic + "," + content
 		// + ")");

@@ -1,13 +1,10 @@
 package com.mayhem.game;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import com.mayhem.mediator.Mediator;
-import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
-import com.mayhem.overlay.PlayerState;
+import com.mayhem.overlay.Region;
 
 public class BotLauncher {
 
@@ -47,8 +44,7 @@ public class BotLauncher {
 		}
 
 		@Override
-		public void regionStateReceived(List<PlayerState> playerList,
-				List<BombState> bombList) {
+		public void regionStateReceived(Region region) {
 		}
 	}
 
