@@ -295,7 +295,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
 					// Change the region controller
-
+					
 					camera.translate(xVar * 20, yVar * 20);
 					camera.update();
 				}
