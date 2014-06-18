@@ -37,7 +37,8 @@ public class ClientApplication implements Application, ScribeClient {
 	protected List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
 	protected List<IRegionStateListener> regionStateListeners = new ArrayList<IRegionStateListener>();
 
-	protected NodeHandle rightCoordinator, leftCoordinator, topCoordinator,
+	protected Id regionController;
+	protected Id rightCoordinator, leftCoordinator, topCoordinator,
 			bottomCoordinator;
 
 	protected boolean isCoordinator;
@@ -71,34 +72,32 @@ public class ClientApplication implements Application, ScribeClient {
 		regionStateListeners.add(toAdd);
 	}
 
-	public void SendJoinMessage(NodeHandle coordinatorHandle) {
-		routeMessageDirect(coordinatorHandle,
-				new JoinMessage(this.node.getId()));
+	public void SendJoinMessage(Id coordinatorHandle) {
+		this.routMessage(coordinatorHandle, new JoinMessage(this.node.getId()));
 	}
 
-	public long SendMovementMessage(NodeHandle coordinatorHandle, int x, int y) {
+	public long SendMovementMessage(Id coordinatorHandle, int x, int y) {
 		MovementMessage msg = new MovementMessage(this.node.getId(), x, y);
-		routeMessageDirect(coordinatorHandle, msg);
+		this.routMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
 	}
 
-	public long SendBombPlacementMessage(NodeHandle coordinatorHandle, int x,
-			int y) {
+	public long SendBombPlacementMessage(Id coordinatorHandle, int x, int y) {
 		BombPlacementMessage msg = new BombPlacementMessage(this.node.getId(),
 				x, y);
-		routeMessageDirect(coordinatorHandle, msg);
+		this.routMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
 	}
 
-	public void SendLeaveGameMessage(NodeHandle coordinatorHandle) {
+	public void SendLeaveGameMessage(Id coordinatorHandle) {
 		this.SendLeaveGameMessage(coordinatorHandle, this.node.getId());
 	}
 
-	protected void SendLeaveGameMessage(NodeHandle coordinatorHandle, Id sender) {
+	protected void SendLeaveGameMessage(Id coordinatorHandle, Id sender) {
 		LeaveMessage msg = new LeaveMessage(sender);
-		routeMessageDirect(coordinatorHandle, msg);
+		this.routMessage(coordinatorHandle, msg);
 	}
 
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
@@ -165,20 +164,53 @@ public class ClientApplication implements Application, ScribeClient {
 					.getY()));
 			scribe.publish(topic, new RegionStateChannelContent(region));
 
+		} else if (message instanceof ChangeRegionMessage) {
+			ChangeRegionMessage msg = (ChangeRegionMessage) message;
+
+			if (this.rightCoordinator == null) {
+				this.routMessage(
+						msg.getSender(),
+						new BecomeRegionControllerMessage(null, this.node
+								.getId(), null, null));
+			}
+			this.region.removePlayerById(msg.getSender());
+			scribe.publish(topic, new RegionStateChannelContent(region));
 		} else if (message instanceof JoinMessage) {
 			JoinMessage msg = (JoinMessage) message;
-			this.regionMembers.add(msg.getSender());
-			this.region.addPlayer(new PlayerState(msg.getSender()));
-			System.out.println("Join:" + msg.getSender());
-			this.routMessage(msg.getSender(), new JoinReplyMessage(
-					this.channelName, this.node.getId(), this.region));
+			// If I'm the region controller, then welcome to the region
+			if (this.isCoordinator) {
+				this.regionMembers.add(msg.getSender());
+				this.region.addPlayer(new PlayerState(msg.getSender()));
+				System.out.println("Join:" + msg.getSender());
+				this.routMessage(msg.getSender(), new JoinReplyMessage(
+						this.channelName, this.node.getId(), this.region));
+			}
+			// Otherwise I will forward the message to my coordinator, he may
+			// help him
+			else {
+				this.routMessage(this.regionController, msg);
+			}
 		} else if (message instanceof JoinReplyMessage) {
 			JoinReplyMessage msg = (JoinReplyMessage) message;
+
+			this.setRegionController(msg.getCoordinatorId());
+
 			System.out.println("JoinReply:" + msg.getChannelName());
 			this.subscribe(msg.getChannelName());
+		
 			for (IRegionStateListener rsl : regionStateListeners)
 				rsl.regionStateReceived(msg.getRegion());
-		} else if (message instanceof LeaveMessage) {
+
+		} else if (message instanceof BecomeRegionControllerMessage) {
+			BecomeRegionControllerMessage msg = (BecomeRegionControllerMessage) message;
+			this.isCoordinator = true;
+			this.leftCoordinator = msg.getLeftCoordinator();
+			this.rightCoordinator = msg.getRightCoordinator();
+			this.topCoordinator = msg.getTopCoordinator();
+			this.bottomCoordinator = msg.getBottomCoordinator();
+		}
+
+		else if (message instanceof LeaveMessage) {
 			LeaveMessage msg = (LeaveMessage) message;
 			try {
 				this.regionMembers.remove(msg.getSender());
@@ -221,8 +253,8 @@ public class ClientApplication implements Application, ScribeClient {
 			System.out.println("Added to leafset:" + handle);
 		else {
 			if (isCoordinator)
-				this.SendLeaveGameMessage(this.node.getLocalNodeHandle(),
-						handle.getId());
+				this.SendLeaveGameMessage(this.node.getLocalNodeHandle()
+						.getId(), handle.getId());
 		}
 	}
 
@@ -246,7 +278,7 @@ public class ClientApplication implements Application, ScribeClient {
 	public void childRemoved(Topic topic, NodeHandle child) {
 		if (isCoordinator) {
 			System.out.println("childRemoved");
-			this.SendLeaveGameMessage(this.node.getLocalNodeHandle(),
+			this.SendLeaveGameMessage(this.node.getLocalNodeHandle().getId(),
 					child.getId());
 		}
 	}
@@ -265,6 +297,14 @@ public class ClientApplication implements Application, ScribeClient {
 		// ChannelContent message = new TestChannelContent(
 		// endpoint.getLocalNodeHandle(), msg);
 		// scribe.publish(topic, message);
+	}
+
+	public Id getRegionController() {
+		return this.regionController;
+	}
+
+	public void setRegionController(Id regionController) {
+		this.regionController = regionController;
 	}
 
 }

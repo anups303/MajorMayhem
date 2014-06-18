@@ -22,7 +22,6 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	private final Object lock = new Object();
 
 	protected PastryNode node;
-	protected NodeHandle regionController;
 	protected ClientApplication app;
 	protected List<Long> recievedAcks;
 
@@ -70,15 +69,18 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		app.addActionAcknowledgmentListener(this);
 		if (!isNewGame) {
 			// Assume our bootstrapper is also the region controller
-			this.regionController = regionControllerFinder(bootaddress);
+			// it will change if it's not the region controller when the node
+			// received the replyJoinMessage
+			this.app.setRegionController(regionControllerFinder(bootaddress)
+					.getId());
 
 			// We successfully connected to the overlay and find the
 			// Coordinator.
 			// So we should talk to him
-			app.SendJoinMessage(this.regionController);
+			app.SendJoinMessage(this.app.getRegionController());
 		} else {
 			app.subscribe(this.node.getId().toString());
-			this.regionController = node.getLocalHandle();
+			this.app.setRegionController(node.getLocalHandle().getId());
 		}
 
 		app.addRegionStateListener(regionStateListener);
@@ -134,7 +136,7 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public long SendCoordinatorMovementMessageAsync(int x, int y) {
-		return app.SendMovementMessage(regionController, x, y);
+		return app.SendMovementMessage(this.app.getRegionController(), x, y);
 	}
 
 	public void acknowledgmentReceived(long messageId) {
@@ -163,7 +165,8 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public long SendCoordinatorBombPlacementMessageAsync(int x, int y) {
-		return app.SendBombPlacementMessage(regionController, x, y);
+		return app.SendBombPlacementMessage(this.app.getRegionController(), x,
+				y);
 	}
 
 	public Id GetNodeId() {
@@ -171,6 +174,6 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public void leaveGame() {
-		app.SendLeaveGameMessage(regionController);
+		app.SendLeaveGameMessage(this.app.getRegionController());
 	}
 }
