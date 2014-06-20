@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="60" height="60" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="TileB" tilewidth="32" tileheight="32">
+  <image source="../TileB.png" width="512" height="512"/>
+  <tile id="8">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="144">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="149">
+   <properties>
+    <property name="blocked" value=""/>
+    <property name="destroyable" value=""/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="tileset" tilewidth="32" tileheight="32">
+  <image source="../tileset.png" width="512" height="512"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztzzENADAIAEFQiIT6d4EFwtSEG27/r4woYOx90ODXs1+/nv1efr72CwAAAAAAAAAAAACw1YwsZc0=
+  </data>
+ </layer>
+ <layer name="Fore" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJzlW1lu6zAM5FHmyv3JeR/6IYBluAwpyc1DBxBsy+KmhaQU50tEvv5Y+Suw9sIUBhOa34I3vi9VKryKwiBrB5IHyzubz1bnygaIP84vdX3Juw2Wp5bj8evAyqvW73TMWPk7Mu1YMPKe9FfR+FpAfo4pa2/UTsuL1i/Dhx2D3bkR0etnSLyONLS9SHTK1nJGp3U5jar/PLmZvbZtR1anzXT8X+bq8YWpt/PZyoX482QyNyO6xT/y0x2/VUHbq/kuHX4TED4esTZH/mrK31vnFa+M32l48zmDzR2iZ90e6hnCj9eNPsjs9fxxtv7gvIvG16uzdDdwM9/I8gsE9Zp2R2YE1t5J/KnyFgzlsv66yjcymUyMPJFbM/Vs38OpZ8cXAf1JsP11w95o/nk8OoCc4cPEEU+Gd76R5ZQejykgz8wbjchevRdYV0is206uF/G09CdiVHaeg0IXBid03NlLwJRs/WKg2w1AuL6P9huaPhtflu9JnJoP0XN1vsHqcyvf3YXVa5pP2vwD8u7rdD0CHkydlcm0j/KjTn61gEIv3Q7qPuLXQbePLNjzWA0E9VY+DA1swyZuxaNb8jHkN41FHm7sB6M1BuFiywnfF+1xbu9/T9B17YfE/rMbj55Alr/bvW1X1+q8bsrX8uvQe/FM3+u6Lu/p+WSEG/kIhF/zk/Mc1t6dcbuJjr0o2lu+kPe+Z+LKLdu74wv5uWbXc5TXQO7tozrzh21b/b4PdR8BQT2zLrLYw+bKVpdVPNyOv5Fc3UbfezRVjKj64cl8A9I/A+q2t20yX/3p319N/FoWlz7F3pPnBU/Ym/nw6B2c96dsRvDc/R7Jew/pxW2tw8lxtbxt+cbu/lfv9TK9T+1trewT+4WOzAUMZFseXTovllWo8o1MhgYImZU+ED9fsHRsOw/M72Wncrpp/szmdrv2Po3MJ9o2ED+XieoXPi3+TvdW2m/qYsF8T3giZni5cWd+V+skKxrs95NQpYrJETQPtv1Ct7/Z/CrKg3TR/Kb9zgDqnpkLVobV+Rvs98ATfb01Zfl6chYsjce/ylctmPNYSKzzU2BkQeq1MrV36sN28qkIEN4vVP9P2V2DFrvrY1enT4m/T2H6f7T/ufwDnq2png==
+  </data>
+ </layer>
+</map>

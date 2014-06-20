@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="60" height="60" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="bg" tilewidth="32" tileheight="32">
+  <image source="../TileB.png" width="512" height="512"/>
+  <tile id="147">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="214">
+   <properties>
+    <property name="blocked" value=""/>
+    <property name="destroyable" value=""/>
+   </properties>
+  </tile>
+  <tile id="232">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="233">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="249">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="fg" tilewidth="32" tileheight="32">
+  <image source="../tileset.png" width="512" height="512"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMA6A9yPrXXI+jYC+pqqqqqqqqqqqqqqqqqvrqAGmBpfA=
+  </data>
+ </layer>
+ <layer name="Fore" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJzlWltqxDAMzP2/c7fcZb/KQgNG6DEzlrKlOxDaTRxJ44csyXkdx/H6sutbgPC9fq9unMv1FDy+ng0V5wtso+Ba/l7mfvbbQzS+SL9fB8fTa2Pveb93+2lFNp8RvoxehK/3PGqj2Lfjr3b4ouOWtVHWP8oXsW/Vq4ylitP8n/HP+DJrx+pR+U70ySoz4rvD1eqwsrIxsDqjPlT7RVm/mU0oFL62nbIndPBF2nvveFw8vp1jbPlGdu3GQF1yd9d3xZexaSK2QpHZmPmrrvXDIooNq/jxBhr/TuVHiL+O4mIEns/32lg8xbcTCFfb/ka2/zI62fcrRPEK6ucjWep+hOSGmd7qvS7fYG3pnM8InxXo3hrtEZG+bDwqvrvzOpPVsadX+bOFypeJrdl3GHTVN3Z137B8O/pvpw+n+HaMJVPXQPVl9StEFprnZM/YMa/4ns69GxXfLIaLdFeoZCryVkS2v8H6qy4fy4zdfT+KUZn+2l2/T9fLb6j5CsOXHRMUar6gwOPbsZ6iWGrCv13myoCeH3nyu4HG3Yzuyl+xcb5iS/c+/YZa32DB5u1Ie3T+KHE7y3eibse0Q+PTCMr4VnMnW++7Ph6tU0Xx4c75YAQlT0PPX9H7T/JV0XX+msnqzI+8XG1i30Jt8aDyZXwo4oPZHKkznvRqBkwMg6JrX1plVfer89BPzUeLyp+htnbkC+x7U35wmi8awzH7BQu2nlXxzfztDt8K6DvZOZWH6jzlE7n8rZ/NXbzn1n71/EhBRw7A+lCUb6Wz8x7zfBcd8dXk/qnIyvDEfoTIVed6da5ugazfzrij8xvgyjerfBnYuOwvxWhvTPtnVs7EN+Ad9SvUpunxZdd99b1ohvOYGQ/PDqXfPJs6vhdlbUBq753rXxnf6fxQqXlFMrL+6qrnRPWArI/Y/vNi46nv2/8LvpXvN10/cSJXRA==
+  </data>
+ </layer>
+</map>
