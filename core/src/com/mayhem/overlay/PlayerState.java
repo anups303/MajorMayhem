@@ -13,7 +13,13 @@ public class PlayerState implements Serializable {
 		x = y = 0;
 	}
 
-	public PlayerState(int x, int y) {
+	public PlayerState(long x, long y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	public PlayerState(Id id, long x, long y) {
+		this.id = id;
 		this.x = x;
 		this.y = y;
 	}

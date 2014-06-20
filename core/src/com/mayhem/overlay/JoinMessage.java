@@ -9,8 +9,27 @@ public class JoinMessage extends Message {
 	public JoinMessage(Id sender) {
 		this.sender = sender;
 	}
-	
-	public Id getSender(){
+
+	@Override
+	public void execute(ClientApplication app) {
+		if (app.getIsCoordinator()) {
+			// this.regionMembers.add(msg.getSender());
+			app.getRegion().addPlayer(new PlayerState(this.getSender()));
+			System.out.println("Join:" + this.getSender());
+			Region r = app.getRegion();
+			app.routMessage(
+					this.getSender(),
+					new JoinReplyMessage(app.getChannelName(), app
+							.getLocalNodeId(), r, r.x, r.y));
+		}
+		// Otherwise I will forward the message to my coordinator, he may
+		// help him
+		else {
+			app.routMessage(app.getRegionController(), this);
+		}
+	}
+
+	public Id getSender() {
 		return sender;
 	}
 

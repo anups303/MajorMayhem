@@ -7,11 +7,27 @@ public class JoinReplyMessage extends Message {
 	String channelName;
 	Id coordinatorId;
 	private Region region;
+	private long playerX, playerY;
 
-	public JoinReplyMessage(String channelName, Id coordinatorId, Region region) {
+	public JoinReplyMessage(String channelName, Id coordinatorId,
+			Region region, long playerX, long playerY) {
 		this.channelName = channelName;
 		this.coordinatorId = coordinatorId;
 		this.region = region;
+		this.playerX = playerX;
+		this.playerY = playerY;
+	}
+
+	@Override
+	public void execute(ClientApplication app) {
+		app.region = this.region;
+
+		app.setRegionController(this.getCoordinatorId());
+
+		System.out.println("JoinReply:" + this.getChannelName());
+		app.subscribe(this.getChannelName());
+
+		app.raiseRegionStateEvent();
 	}
 
 	public String getChannelName() {

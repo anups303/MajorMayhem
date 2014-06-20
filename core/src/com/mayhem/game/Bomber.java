@@ -283,8 +283,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				|| (cell != null && !cell.getTile().getProperties()
 						.containsKey("blocked"))) {
 
-			int xMod = ((int) (posX / moveAmount)) / 18;
-			int yMod = ((int) (posY / moveAmount)) / 18;
+			int xMod = ((int) (posX / moveAmount)) / 20;
+			int yMod = ((int) (posY / moveAmount)) / 20;
 			posX += xVar;
 			posY += yVar;
 			if (mediator.updatePosition(((int) (posX)) / moveAmount,
