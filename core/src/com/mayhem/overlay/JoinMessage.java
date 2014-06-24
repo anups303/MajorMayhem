@@ -14,13 +14,16 @@ public class JoinMessage extends Message {
 	public void execute(ClientApplication app) {
 		if (app.getIsCoordinator()) {
 			// this.regionMembers.add(msg.getSender());
-			app.getRegion().addPlayer(new PlayerState(this.getSender()));
-			System.out.println("Join:" + this.getSender());
 			Region r = app.getRegion();
+			app.getRegion().addPlayer(
+					new PlayerState(this.getSender(), r.x + 1, r.y + 1));
+			System.out.println("Join:" + this.getSender());
+
 			app.routMessage(
 					this.getSender(),
-					new JoinReplyMessage(app.getChannelName(), app
-							.getLocalNodeId(), r, r.x, r.y));
+					new JoinReplyMessage(this.getMessageId(), true, app
+							.getChannelName(), app.getLocalNodeId(), r, r.x,
+							r.y));
 		}
 		// Otherwise I will forward the message to my coordinator, he may
 		// help him

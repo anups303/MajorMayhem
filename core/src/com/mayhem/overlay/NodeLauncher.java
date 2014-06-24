@@ -3,7 +3,6 @@ package com.mayhem.overlay;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.*;
 
 import rice.p2p.commonapi.Id;
@@ -20,10 +19,11 @@ import rice.pastry.standard.IPNodeIdFactory;
 
 public class NodeLauncher implements IActionAcknowledgmentListner {
 	private final Object lock = new Object();
+	private Region region;
 
 	protected PastryNode node;
 	protected ClientApplication app;
-	protected List<Long> recievedAcks;
+	protected Map<Long, Object> recievedAcks;
 
 	protected NodeLauncher() {
 
@@ -65,8 +65,10 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		}
 
 		System.out.println("Finished creating new node " + node);
-
+		recievedAcks = new HashMap<Long, Object>();
 		app.addActionAcknowledgmentListener(this);
+		app.addRegionStateListener(regionStateListener);
+
 		if (!isNewGame) {
 			// Assume our bootstrapper is also the region controller
 			// it will change if it's not the region controller when the node
@@ -77,14 +79,30 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 			// We successfully connected to the overlay and find the
 			// Coordinator.
 			// So we should talk to him
-			app.SendJoinMessage(this.app.getRegionController());
+			long msgId = app.SendJoinMessage(this.app.getRegionController());
+			try {
+				synchronized (lock) {
+					// We will wait until the ACK receives
+					while (true) {
+						lock.wait();
+						Iterator<Long> itr = recievedAcks.keySet().iterator();
+						while (itr.hasNext())
+							if (msgId == itr.next()) {
+								if (recievedAcks.get(msgId) instanceof Region) 
+									region = (Region) recievedAcks.get(msgId);
+								return;
+							}
+					}
+				}
+			} catch (Exception ex) {
+				// return false;
+			}
+
 		} else {
 			app.subscribe(this.node.getId().toString());
 			this.app.setRegionController(node.getLocalHandle().getId());
 		}
 
-		app.addRegionStateListener(regionStateListener);
-		recievedAcks = new ArrayList();
 	}
 
 	protected NodeHandle regionControllerFinder(
@@ -125,8 +143,9 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 				// We will wait until the ACK receives
 				while (true) {
 					lock.wait();
-					for (int i = 0; i < recievedAcks.size(); i++)
-						if (msgId == recievedAcks.get(i))
+					Iterator<Long> itr = recievedAcks.keySet().iterator();
+					while (itr.hasNext())
+						if (msgId == itr.next())
 							return true;
 				}
 			}
@@ -139,9 +158,9 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		return app.SendMovementMessage(this.app.getRegionController(), x, y);
 	}
 
-	public void acknowledgmentReceived(long messageId) {
+	public void acknowledgmentReceived(long messageId, Object result) {
 		synchronized (lock) {
-			recievedAcks.add(messageId);
+			recievedAcks.put(messageId, result);
 			lock.notifyAll();
 		}
 	}
@@ -153,8 +172,9 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 				// We will wait until the ACK receives
 				while (true) {
 					lock.wait();
-					for (int i = 0; i < recievedAcks.size(); i++)
-						if (msgId == recievedAcks.get(i))
+					Iterator<Long> itr = recievedAcks.keySet().iterator();
+					while (itr.hasNext())
+						if (msgId == itr.next())
 							return true;
 				}
 			}
@@ -171,6 +191,10 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 
 	public Id GetNodeId() {
 		return node.getId();
+	}
+	
+	public Region getRegion(){
+		return this.region;
 	}
 
 	public void leaveGame() {

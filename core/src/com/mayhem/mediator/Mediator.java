@@ -13,6 +13,7 @@ import com.mayhem.overlay.ClientApplication;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.NodeLauncher;
 import com.mayhem.overlay.PlayerState;
+import com.mayhem.overlay.Region;
 
 public class Mediator {
 	protected Environment environment;
@@ -20,7 +21,7 @@ public class Mediator {
 	protected ClientApplication app;
 
 	// Create and configure a new environment for overlay
-	public boolean joinGame(String bootIp, int bootport,
+	public Region joinGame(String bootIp, int bootport,
 			IRegionStateListener regionStateListener) {
 
 		int bindport;
@@ -50,9 +51,9 @@ public class Mediator {
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
 			// TODO: log the exception
-			return false;
+			return null;
 		}
-		return true;
+		return nodeLauncher.getRegion();
 	}
 
 	public boolean newGame(IRegionStateListener regionStateListener) {

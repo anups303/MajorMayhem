@@ -54,8 +54,11 @@ public class ClientApplication implements Application, ScribeClient {
 		regionStateListeners.add(toAdd);
 	}
 
-	public void SendJoinMessage(Id coordinatorHandle) {
-		this.routMessage(coordinatorHandle, new JoinMessage(this.node.getId()));
+	public long SendJoinMessage(Id coordinatorHandle) {
+		JoinMessage msg = new JoinMessage(this.node.getId());
+		this.routMessage(coordinatorHandle, msg);
+
+		return msg.getMessageId();
 	}
 
 	public long SendMovementMessage(Id coordinatorHandle, int x, int y) {
@@ -188,6 +191,7 @@ public class ClientApplication implements Application, ScribeClient {
 
 	protected void publishRegionState() {
 		this.publish(new RegionStateChannelContent(this.getRegion()));
+		this.getRegion().bombs.clear();
 	}
 
 	protected Region getRegion() {
@@ -199,9 +203,9 @@ public class ClientApplication implements Application, ScribeClient {
 			rsl.regionStateReceived(this.region);
 	}
 
-	protected void raiseActionAcknowledgmentEvent(long id) {
+	protected void raiseActionAcknowledgmentEvent(long id, Object result) {
 		for (IActionAcknowledgmentListner hl : actionAcknowledgmentlisteners)
-			hl.acknowledgmentReceived(id);
+			hl.acknowledgmentReceived(id, result);
 	}
 
 	protected boolean getIsCoordinator() {

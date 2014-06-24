@@ -5,11 +5,9 @@ import rice.p2p.commonapi.Id;
 public class MovementMessage extends Message implements IAcknowledgeable {
 	private static final long serialVersionUID = 6561350713073687226L;
 	private Id sender;
-	private long messageId;
 	private int x, y;
 
 	public MovementMessage(Id sender, int x, int y) {
-		messageId = new java.util.Random().nextLong();
 		this.sender = sender;
 		this.x = x;
 		this.y = y;
@@ -87,7 +85,5 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 		return this.y;
 	}
 
-	public long getMessageId() {
-		return messageId;
-	}
+	
 }

@@ -17,7 +17,7 @@ public class ActionAcknowledgmentMessage extends Message {
 			// System.out.println("action " + msg.getActionMessageId()
 			// + " is valid");
 		}
-		app.raiseActionAcknowledgmentEvent(this.getActionMessageId());
+		app.raiseActionAcknowledgmentEvent(this.getActionMessageId(), null);
 	}
 
 	public long getActionMessageId() {

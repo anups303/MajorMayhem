@@ -72,21 +72,26 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	// for map
 	private TiledMap tiledMap;
 	private TiledMapRenderer tiledMapRenderer;
+	private float w, h;
 
 	// for randomization
 	private Random rand = new Random();
 
 	// for collision detection
 	private TiledMapTileLayer collisionLayer;
+	private int mapheight, mapwidth;
 
 	@Override
 	public void create() {
 		// for map
-		tiledMap = new TmxMapLoader().load("MapTwo.tmx");
+		tiledMap = new TmxMapLoader().load("maps/Map" + (rand.nextInt(10) + 1)
+				+ ".tmx");
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
 		// for collision detection
 		collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Fore");
+		mapheight = collisionLayer.getHeight();
+		mapwidth = collisionLayer.getWidth();
 
 		// for sprite
 		batch = new SpriteBatch();
@@ -101,26 +106,51 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		bombSprite = new HashMap<Long, BombInfo>();
 
 		// for sprite position
-		float w = Gdx.graphics.getWidth();
-		float h = Gdx.graphics.getHeight();
+		w = Gdx.graphics.getWidth();
+		h = Gdx.graphics.getHeight();
 		sprite.setSize(32.0f, 64.0f);
-		posX = moveAmount * (rand.nextInt(29) + 1);
-		posY = moveAmount * (rand.nextInt(29) + 1);
+		posX = 32 * (rand.nextInt(mapwidth - 2) + 1);
+		posY = 32 * (rand.nextInt(mapheight - 2) + 1);
 		// check whether overlapping with another block
-		while (collisionLayer.getCell((int) posX / moveAmount, (int) posY
-				/ moveAmount) != null) {
-			posX = moveAmount * (rand.nextInt(29) + 1);
-			posY = moveAmount * (rand.nextInt(29) + 1);
+		while (collisionLayer.getCell((int) posX / 32, (int) posY / 32) != null) {
+			posX = 32 * (rand.nextInt(mapwidth - 2) + 1);
+			posY = 32 * (rand.nextInt(mapheight - 2) + 1);
 		}
-		posX = posY = moveAmount;
+		// posX = posY = moveAmount;
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
 
 		// for camera
 		camera = new OrthographicCamera(w, h);
 		camera.setToOrtho(false);
-		camera.position.x = posX + moveAmount * 12;
-		camera.position.y = posY + moveAmount * 9;
+		switch ((int) (posX / w)) {
+		case 0:
+			camera.position.x = 32 * 10;
+			break;
+		case 1:
+			camera.position.x = 32 * 30;
+			break;
+		case 2:
+			camera.position.x = 32 * 50;
+			break;
+		default:
+			break;
+		}
+		switch ((int) (posY / h)) {
+		case 0:
+			camera.position.y = 32 * 10;
+			break;
+		case 1:
+			camera.position.y = 32 * 30;
+			break;
+		case 2:
+			camera.position.y = 32 * 50;
+			break;
+		default:
+			break;
+		}
+		// camera.position.x = posX;
+		// camera.position.y = posY;
 		camera.update();
 
 		// for players
@@ -135,11 +165,20 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				// TODO: Let user know about it!
 			}
 		} else {
-			if (!mediator.joinGame(null, 9001, this)) {
+			Region init = mediator.joinGame(null, 9001, this);
+			if (init == null) {
 				// TODO: Let user know about it!
+			} else {
+				for (int i = 0; i < init.getPlayers().size(); i++)
+					if (init.getPlayers().get(i).getId() == mediator
+							.GetNodeId()) {
+						posX = init.getPlayers().get(i).getX() * moveAmount;
+						posY = init.getPlayers().get(i).getY() * moveAmount;
+					}
 			}
 		}
 
+		sprite.setPosition(posX, posY);
 		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
 				/ moveAmount);
 	}
@@ -295,13 +334,41 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
 					// Change the region controller
-					
-					camera.translate(xVar * 20, yVar * 20);
-					camera.update();
+
+					// camera.translate(xVar * 20, yVar * 20);
+					// camera.update();
 				}
 			}
 
 		}
+
+		switch ((int) (posX / w)) {
+		case 0:
+			camera.position.x = 32 * 10;
+			break;
+		case 1:
+			camera.position.x = 32 * 30;
+			break;
+		case 2:
+			camera.position.x = 32 * 50;
+			break;
+		default:
+			break;
+		}
+		switch ((int) (posY / h)) {
+		case 0:
+			camera.position.y = 32 * 10;
+			break;
+		case 1:
+			camera.position.y = 32 * 30;
+			break;
+		case 2:
+			camera.position.y = 32 * 50;
+			break;
+		default:
+			break;
+		}
+		camera.update();
 
 		if (keycode == Keys.SPACE) {
 			if (mediator.bombPlacement(((int) (posX)) / moveAmount,

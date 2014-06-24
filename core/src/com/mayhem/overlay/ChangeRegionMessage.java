@@ -19,9 +19,10 @@ public class ChangeRegionMessage extends Message {
 		app.region.addPlayer(new PlayerState(this.sender, this.playerX,
 				this.playerY));
 		Region r = app.getRegion();
-		app.routMessage(this.getSender(),
-				new JoinReplyMessage(app.getChannelName(),
-						app.getLocalNodeId(), r, r.x, r.y));
+		app.routMessage(
+				this.getSender(),
+				new JoinReplyMessage(-1, true, app.getChannelName(), app
+						.getLocalNodeId(), r, r.x, r.y));
 		app.publishRegionState();
 	}
 
