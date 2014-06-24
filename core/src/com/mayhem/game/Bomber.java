@@ -72,11 +72,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	// for map
 	private TiledMap tiledMap;
 	private TiledMapRenderer tiledMapRenderer;
-<<<<<<< HEAD
 	private float w, h;
-=======
-	private float w,h;
->>>>>>> FETCH_HEAD
 
 	// for randomization
 	private Random rand = new Random();
@@ -88,12 +84,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	@Override
 	public void create() {
 		// for map
-<<<<<<< HEAD
 		tiledMap = new TmxMapLoader().load("maps/Map" + (rand.nextInt(10) + 1)
 				+ ".tmx");
-=======
-		tiledMap = new TmxMapLoader().load("maps/Map"+(rand.nextInt(10)+1)+".tmx");
->>>>>>> FETCH_HEAD
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
 		// for collision detection
@@ -117,7 +109,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		w = Gdx.graphics.getWidth();
 		h = Gdx.graphics.getHeight();
 		sprite.setSize(32.0f, 64.0f);
-<<<<<<< HEAD
 		posX = 32 * (rand.nextInt(mapwidth - 2) + 1);
 		posY = 32 * (rand.nextInt(mapheight - 2) + 1);
 		// check whether overlapping with another block
@@ -126,23 +117,12 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			posY = 32 * (rand.nextInt(mapheight - 2) + 1);
 		}
 		// posX = posY = moveAmount;
-=======
-		posX = 32*(rand.nextInt(mapwidth-2) + 1);
-		posY = 32*(rand.nextInt(mapheight-2) + 1);
-		// check whether overlapping with another block
-		while (collisionLayer.getCell((int) posX/32, (int) posY/32)!=null) {
-			posX = 32*(rand.nextInt(mapwidth-2) + 1);
-			posY = 32*(rand.nextInt(mapheight-2) + 1);
-		}
-		//posX = posY = moveAmount;
->>>>>>> FETCH_HEAD
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
 
 		// for camera
 		camera = new OrthographicCamera(w, h);
 		camera.setToOrtho(false);
-<<<<<<< HEAD
 		switch ((int) (posX / w)) {
 		case 0:
 			camera.position.x = 32 * 10;
@@ -171,28 +151,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 		// camera.position.x = posX;
 		// camera.position.y = posY;
-=======
-		switch((int)(posX/w)) {
-		case 0: camera.position.x = 32*10;
-		break;
-		case 1: camera.position.x = 32*30;
-		break;
-		case 2: camera.position.x = 32*50;
-		break;
-		default: break;
-		}
-		switch((int)(posY/h)) {
-		case 0: camera.position.y = 32*10;
-		break;
-		case 1: camera.position.y = 32*30;
-		break;
-		case 2: camera.position.y = 32*50;
-		break;
-		default: break;
-		}
-//		camera.position.x = posX;
-//		camera.position.y = posY;
->>>>>>> FETCH_HEAD
 		camera.update();
 
 		// for players
@@ -376,39 +334,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
 					// Change the region controller
-<<<<<<< HEAD
 
 					// camera.translate(xVar * 20, yVar * 20);
 					// camera.update();
-=======
-					
-					//camera.translate(xVar * 20, yVar * 20);
-					//camera.update();
->>>>>>> FETCH_HEAD
 				}
 			}
 
 		}
-		
-		switch((int)(posX/w)) {
-		case 0: camera.position.x = 32*10;
-		break;
-		case 1: camera.position.x = 32*30;
-		break;
-		case 2: camera.position.x = 32*50;
-		break;
-		default: break;
-		}
-		switch((int)(posY/h)) {
-		case 0: camera.position.y = 32*10;
-		break;
-		case 1: camera.position.y = 32*30;
-		break;
-		case 2: camera.position.y = 32*50;
-		break;
-		default: break;
-		}
-		camera.update();
 
 		switch ((int) (posX / w)) {
 		case 0:
