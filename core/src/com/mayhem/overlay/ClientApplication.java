@@ -35,14 +35,18 @@ public class ClientApplication implements Application, ScribeClient {
 	protected Region region;
 
 	public ClientApplication(Node node, boolean isNewGame) {
-		this.region = new Region();
+
 		this.isCoordinator = isNewGame;
 		this.node = node;
 		this.endpoint = node.buildEndpoint(this, "instance");
 		scribe = new ScribeImpl(node, "scribeInstance");
 
 		endpoint.register();
-		this.region.addPlayer(new PlayerState(node.getId()));
+		if (isNewGame) {
+			this.region = new Region(-1);
+			this.region.addPlayer(new PlayerState(node.getId()));
+		} else
+			this.region = new Region(1);
 	}
 
 	public void addActionAcknowledgmentListener(
@@ -194,7 +198,7 @@ public class ClientApplication implements Application, ScribeClient {
 		this.getRegion().bombs.clear();
 	}
 
-	protected Region getRegion() {
+	public Region getRegion() {
 		return this.region;
 	}
 

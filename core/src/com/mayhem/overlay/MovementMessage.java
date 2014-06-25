@@ -20,12 +20,13 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 		for (PlayerState player : app.region.getPlayers()) {
 			if (player.getId() == this.getSender()) {
-				boolean leftRegion = (player.getX() / 10) == (this.getX() / 10) + 1;
-				boolean rightRegion = (player.getX() / 10) + 1 == (this.getX() / 10);
-				boolean topRegion = (player.getY() / 10) == (this.getY() / 10) + 1;
-				boolean bottomRegion = (player.getY() / 10) + 1 == (this.getY() / 10);
+				boolean leftRegion = (player.getX() / 20) == (this.getX() / 20) + 1;
+				boolean rightRegion = (player.getX() / 20) + 1 == (this.getX() / 20);
+				boolean topRegion = (player.getY() / 20) == (this.getY() / 20) + 1;
+				boolean bottomRegion = (player.getY() / 20) + 1 == (this.getY() / 20);
 
-				if (leftRegion || rightRegion || topRegion || bottomRegion) {
+				if ((leftRegion || rightRegion || topRegion || bottomRegion)
+						&& (player.getX() != -1 && player.getY() != -1)) {
 					// User's about to move to another region!
 					app.region.removePlayerById(this.getSender());
 
@@ -36,11 +37,10 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 									this.getSender(),
 									new BecomeRegionControllerMessage(app.node
 											.getId(), null, null, null, this.x,
-											this.y, app.region.x - (10 + 1),
+											this.y, app.region.x - (20 + 1),
 											app.region.y));
 						} else {
-							app.routMessage(
-									app.leftCoordinator,
+							app.routMessage(app.leftCoordinator,
 									new ChangeRegionMessage(this.getSender(),
 											this.x, this.y));
 						}
@@ -53,7 +53,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 									new BecomeRegionControllerMessage(null,
 											app.node.getId(), null, null,
 											this.x, this.y, app.region.x
-													+ (10 + 1), app.region.y));
+													+ (20 + 1), app.region.y));
 						} else {
 							app.routMessage(app.rightCoordinator,
 									new ChangeRegionMessage(this.getSender(),
@@ -85,5 +85,4 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 		return this.y;
 	}
 
-	
 }

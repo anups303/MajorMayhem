@@ -10,7 +10,7 @@ public class PlayerState implements Serializable {
 
 	public PlayerState(Id id) {
 		this.id = id;
-		x = y = 0;
+		x = y = -1;
 	}
 
 	public PlayerState(long x, long y) {

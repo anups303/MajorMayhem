@@ -27,7 +27,7 @@ public class BecomeRegionControllerMessage extends Message {
 		app.isCoordinator = true;
 		app.setRegionController(app.getLocalNodeId());
 
-		app.region = new Region();
+		app.region = new Region(-1);
 		app.region.setPosition(regionX, regionY);
 		app.region.addPlayer(new PlayerState(app.getLocalNodeId(), playerX,
 				playerY));

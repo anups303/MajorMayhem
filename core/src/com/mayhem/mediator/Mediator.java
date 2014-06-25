@@ -51,12 +51,13 @@ public class Mediator {
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
 			// TODO: log the exception
+			System.out.println(e);
 			return null;
 		}
 		return nodeLauncher.getRegion();
 	}
 
-	public boolean newGame(IRegionStateListener regionStateListener) {
+	public int newGame(IRegionStateListener regionStateListener) {
 
 		try {
 			String ip = InetAddress.getLocalHost().getHostAddress();
@@ -77,10 +78,10 @@ public class Mediator {
 
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
-			return false;
+			return -1;
 		}
 
-		return true;
+		return app.getRegion().getMapId();
 	}
 
 	public boolean updatePosition(int x, int y) {

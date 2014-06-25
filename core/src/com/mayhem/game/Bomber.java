@@ -83,15 +83,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public void create() {
-		// for map
-		tiledMap = new TmxMapLoader().load("maps/Map" + (rand.nextInt(10) + 1)
-				+ ".tmx");
-		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-
-		// for collision detection
-		collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Fore");
-		mapheight = collisionLayer.getHeight();
-		mapwidth = collisionLayer.getWidth();
 
 		// for sprite
 		batch = new SpriteBatch();
@@ -105,18 +96,62 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		bombTex = new Texture(Gdx.files.internal("Bomb_f01.png"));
 		bombSprite = new HashMap<Long, BombInfo>();
 
-		// for sprite position
+		sprite.setSize(32.0f, 64.0f);
+
+		// for players
+		players = new HashMap<Id, Sprite>();
+
+		int mapId;
+		// for overlay configuration
+		mediator = new Mediator();
+
+		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
+		if (coordinator) {
+			mapId = mediator.newGame(this);
+			if (mapId == -1) {
+				// TODO: Let user know about it!
+			}
+			posX = posY = 1 * moveAmount;
+		} else {
+			Region init = mediator.joinGame(null, 9001, this);
+			if (init == null) {
+				// TODO: Let user know about it!
+				return;
+			} else {
+				mapId = init.getMapId();
+				for (int i = 0; i < init.getPlayers().size(); i++)
+					if (init.getPlayers().get(i).getId() == mediator
+							.GetNodeId()) {
+						posX = init.getPlayers().get(i).getX() * moveAmount;
+						posY = init.getPlayers().get(i).getY() * moveAmount;
+					}
+			}
+		}
+
+		// for map
+		System.out.println("mapid:" + mapId);
+		tiledMap = new TmxMapLoader().load("maps/Map" + mapId + ".tmx");
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+
+		// for collision detection
+		collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Fore");
+		mapheight = collisionLayer.getHeight();
+		mapwidth = collisionLayer.getWidth();
+
 		w = Gdx.graphics.getWidth();
 		h = Gdx.graphics.getHeight();
-		sprite.setSize(32.0f, 64.0f);
-		posX = 32 * (rand.nextInt(mapwidth - 2) + 1);
-		posY = 32 * (rand.nextInt(mapheight - 2) + 1);
-		// check whether overlapping with another block
-		while (collisionLayer.getCell((int) posX / 32, (int) posY / 32) != null) {
+
+		if (posX == 0 && posY == 0) {
+			// for sprite position
+
 			posX = 32 * (rand.nextInt(mapwidth - 2) + 1);
 			posY = 32 * (rand.nextInt(mapheight - 2) + 1);
+			// check whether overlapping with another block
+			while (collisionLayer.getCell((int) posX / 32, (int) posY / 32) != null) {
+				posX = 32 * (rand.nextInt(mapwidth - 2) + 1);
+				posY = 32 * (rand.nextInt(mapheight - 2) + 1);
+			}
 		}
-		// posX = posY = moveAmount;
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
 
@@ -153,34 +188,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// camera.position.y = posY;
 		camera.update();
 
-		// for players
-		players = new HashMap<Id, Sprite>();
-
-		// for overlay configuration
-		mediator = new Mediator();
-
-		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
-		if (coordinator) {
-			if (!mediator.newGame(this)) {
-				// TODO: Let user know about it!
-			}
-		} else {
-			Region init = mediator.joinGame(null, 9001, this);
-			if (init == null) {
-				// TODO: Let user know about it!
-			} else {
-				for (int i = 0; i < init.getPlayers().size(); i++)
-					if (init.getPlayers().get(i).getId() == mediator
-							.GetNodeId()) {
-						posX = init.getPlayers().get(i).getX() * moveAmount;
-						posY = init.getPlayers().get(i).getY() * moveAmount;
-					}
-			}
-		}
-
 		sprite.setPosition(posX, posY);
 		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
 				/ moveAmount);
+
 	}
 
 	@Override
@@ -334,41 +345,12 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
 					// Change the region controller
-
-					// camera.translate(xVar * 20, yVar * 20);
-					// camera.update();
+					 camera.translate(xVar * 20, yVar * 20);
+					 camera.update();
 				}
 			}
 
 		}
-
-		switch ((int) (posX / w)) {
-		case 0:
-			camera.position.x = 32 * 10;
-			break;
-		case 1:
-			camera.position.x = 32 * 30;
-			break;
-		case 2:
-			camera.position.x = 32 * 50;
-			break;
-		default:
-			break;
-		}
-		switch ((int) (posY / h)) {
-		case 0:
-			camera.position.y = 32 * 10;
-			break;
-		case 1:
-			camera.position.y = 32 * 30;
-			break;
-		case 2:
-			camera.position.y = 32 * 50;
-			break;
-		default:
-			break;
-		}
-		camera.update();
 
 		if (keycode == Keys.SPACE) {
 			if (mediator.bombPlacement(((int) (posX)) / moveAmount,
@@ -424,50 +406,61 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	protected Sprite findPlayerById(Id id) {
-		return players.get(id);
+		if (players != null)
+			return players.get(id);
+		else
+			return null;
 	}
 
 	@Override
 	public void regionStateReceived(Region region) {
-		List<PlayerState> playerList = region.getPlayers();
-		List<BombState> bombList = region.getBombs();
-		if (playerList != null)
-			synchronized (players) {
-				for (PlayerState player : playerList) {
-					if (player.getId() != mediator.GetNodeId()) {
-						// TODO: Render each player in their new position
-						Sprite p = findPlayerById(player.getId());
-						if (p == null) {
-							p = new Sprite(textureOfOtherPlayers);
-							this.players.put(player.getId(), p);
+		try {
+			List<PlayerState> playerList = region.getPlayers();
+			List<BombState> bombList = region.getBombs();
+			if (playerList != null)
+				synchronized (players) {
+					for (PlayerState player : playerList) {
+						if (player.getId() != mediator.GetNodeId()) {
+							// TODO: Render each player in their new position
+							Sprite p = findPlayerById(player.getId());
+							if (p == null) {
+								p = new Sprite(textureOfOtherPlayers);
+								this.players.put(player.getId(), p);
+							}
+							p.setSize(32.0f, 64.0f);
+							p.setPosition(player.getX() * moveAmount,
+									player.getY() * moveAmount);
+
 						}
-						p.setSize(32.0f, 64.0f);
-						p.setPosition(player.getX() * moveAmount, player.getY()
+					}
+
+					Iterator<Id> itr = players.keySet().iterator();
+					List<Id> toBeRemoved = new ArrayList<Id>();
+					while (itr.hasNext()) {
+						Id key = itr.next();
+						boolean found = false;
+						for (PlayerState player : playerList)
+							if (player.getId() == key) {
+								found = true;
+								break;
+							}
+						if (!found)
+							toBeRemoved.add(key);
+					}
+					if (toBeRemoved.size() > 0)
+						for (Id id : toBeRemoved)
+							players.remove(id);
+
+				}
+			if (bombList != null)
+				synchronized (bombList) {
+					for (BombState bomb : bombList) {
+						addBomb(bomb.getX() * moveAmount, bomb.getY()
 								* moveAmount);
 					}
 				}
-
-				Iterator<Id> itr = players.keySet().iterator();
-				List<Id> toBeRemoved = new ArrayList<Id>();
-				while (itr.hasNext()) {
-					Id key = itr.next();
-					boolean found = false;
-					for (PlayerState player : playerList)
-						if (player.getId() == key)
-							found = true;
-					if (!found)
-						toBeRemoved.add(key);
-				}
-				if (toBeRemoved.size() > 0)
-					for (Id id : toBeRemoved)
-						players.remove(id);
-
-			}
-		if (bombList != null)
-			synchronized (bombList) {
-				for (BombState bomb : bombList) {
-					addBomb(bomb.getX() * moveAmount, bomb.getY() * moveAmount);
-				}
-			}
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 }
