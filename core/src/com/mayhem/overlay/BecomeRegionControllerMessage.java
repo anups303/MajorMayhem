@@ -8,10 +8,18 @@ public class BecomeRegionControllerMessage extends Message {
 	private Id rightCoordinator, leftCoordinator, topCoordinator,
 			bottomCoordinator;
 	private long playerX, playerY, regionX, regionY;
+	private Region region;
 
-	public BecomeRegionControllerMessage(Id rightCoordinator,
-			Id leftCoordinator, Id topCoordinator, Id bottomCoordinator,
+	public BecomeRegionControllerMessage(Id leftCoordinator,
+			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
 			long x, long y, long regionX, long regionY) {
+		this(leftCoordinator, rightCoordinator, topCoordinator,
+				bottomCoordinator, x, y, regionX, regionY, null);
+	}
+
+	public BecomeRegionControllerMessage(Id leftCoordinator,
+			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
+			long x, long y, long regionX, long regionY, Region region) {
 		this.rightCoordinator = rightCoordinator;
 		this.leftCoordinator = leftCoordinator;
 		this.topCoordinator = topCoordinator;
@@ -20,6 +28,7 @@ public class BecomeRegionControllerMessage extends Message {
 		this.playerY = y;
 		this.regionX = regionX;
 		this.regionY = regionY;
+		this.region = region;
 	}
 
 	@Override
@@ -27,16 +36,22 @@ public class BecomeRegionControllerMessage extends Message {
 		app.isCoordinator = true;
 		app.setRegionController(app.getLocalNodeId());
 
-		app.region = new Region(-1);
-		app.region.setPosition(regionX, regionY);
-		app.region.addPlayer(new PlayerState(app.getLocalNodeId(), playerX,
-				playerY));
+		if (this.region == null) {
+			app.region = new Region(-1);
+			app.region.setPosition(regionX, regionY);
+			app.region.addPlayer(new PlayerState(app.getLocalNodeId(), playerX,
+					playerY));
+		} else {
+			app.region = this.region;
+		}
 		app.subscribe(app.getLocalNodeId().toString());
 
 		app.leftCoordinator = this.getLeftCoordinator();
 		app.rightCoordinator = this.getRightCoordinator();
 		app.topCoordinator = this.getTopCoordinator();
 		app.bottomCoordinator = this.getBottomCoordinator();
+
+		app.publishRegionState();
 
 	}
 

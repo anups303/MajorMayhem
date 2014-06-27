@@ -33,7 +33,7 @@ public class JoinReplyMessage extends ActionAcknowledgmentMessage {
 		if (this.getActionMessageId() != -1)
 			app.raiseActionAcknowledgmentEvent(this.getActionMessageId(),
 					region);
-		app.raiseRegionStateEvent();
+		app.raiseRegionStateEvent(true);
 	}
 
 	public String getChannelName() {

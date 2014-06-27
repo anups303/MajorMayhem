@@ -139,6 +139,8 @@ public class ClientApplication implements Application, ScribeClient {
 	public void deliver(Topic topic, ScribeContent content) {
 		if (content instanceof RegionStateChannelContent) {
 			RegionStateChannelContent msg = (RegionStateChannelContent) content;
+
+			// if (msg.g)
 			for (IRegionStateListener rsl : regionStateListeners)
 				rsl.regionStateReceived(msg.getRegion());
 		}
@@ -194,8 +196,21 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	protected void publishRegionState() {
-		this.publish(new RegionStateChannelContent(this.getRegion()));
-		this.getRegion().bombs.clear();
+		Region r = this.getRegion().clone();
+		r.destroyedBlocks = null;
+		this.publish(new RegionStateChannelContent(r, this.node.getId()));
+		// this.region.destroyedBlocks.add(arg0);
+		for (BombState bs : this.region.bombs) {
+			this.region.destroyedBlocks.add(new Pair<Integer, Integer>(bs
+					.getX() + 1, bs.getY()));
+			this.region.destroyedBlocks.add(new Pair<Integer, Integer>(bs
+					.getX() - 1, bs.getY()));
+			this.region.destroyedBlocks.add(new Pair<Integer, Integer>(bs
+					.getX(), bs.getY() + 1));
+			this.region.destroyedBlocks.add(new Pair<Integer, Integer>(bs
+					.getX(), bs.getY() - 1));
+		}
+		this.region.bombs.clear();
 	}
 
 	public Region getRegion() {
@@ -203,8 +218,19 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	protected void raiseRegionStateEvent() {
+		raiseRegionStateEvent(false);
+	}
+
+	protected void raiseRegionStateEvent(boolean destroyedBlocks) {
+		raiseRegionStateEvent(destroyedBlocks, this.region);
+	}
+
+	protected void raiseRegionStateEvent(boolean destroyedBlocks, Region region) {
+		Region r = region.clone();
+		if (!destroyedBlocks)
+			r.destroyedBlocks = null;
 		for (IRegionStateListener rsl : regionStateListeners)
-			rsl.regionStateReceived(this.region);
+			rsl.regionStateReceived(r);
 	}
 
 	protected void raiseActionAcknowledgmentEvent(long id, Object result) {

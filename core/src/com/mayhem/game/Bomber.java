@@ -25,11 +25,11 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 //for collision detection
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.physics.bullet.linearmath.int4;
 import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.PlayerState;
-
 import com.mayhem.overlay.Region;
 
 //for randomization
@@ -80,6 +80,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	// for collision detection
 	private TiledMapTileLayer collisionLayer;
 	private int mapheight, mapwidth;
+	private Integer mapId, newMapId;
 
 	@Override
 	public void create() {
@@ -101,10 +102,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for players
 		players = new HashMap<Id, Sprite>();
 
-		int mapId;
 		// for overlay configuration
 		mediator = new Mediator();
-
+		Region init = null;
 		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
 		if (coordinator) {
 			mapId = mediator.newGame(this);
@@ -113,7 +113,16 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			}
 			posX = posY = 1 * moveAmount;
 		} else {
-			Region init = mediator.joinGame(null, 9001, this);
+			int bootstrapperPort = 9001;
+			if (System.getenv("bootstrapperPort") != null) {
+				bootstrapperPort = Integer.parseInt(System
+						.getenv("bootstrapperPort"));
+			}
+			int localPort = 9001;
+			if (System.getenv("localPort") != null) {
+				localPort = Integer.parseInt(System.getenv("localPort"));
+			}
+			init = mediator.joinGame(null, bootstrapperPort, this, localPort);
 			if (init == null) {
 				// TODO: Let user know about it!
 				return;
@@ -130,6 +139,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		// for map
 		System.out.println("mapid:" + mapId);
+		newMapId = mapId;
 		tiledMap = new TmxMapLoader().load("maps/Map" + mapId + ".tmx");
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
@@ -152,6 +162,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				posY = 32 * (rand.nextInt(mapheight - 2) + 1);
 			}
 		}
+		if (init != null && init.getDestroyedBlocks() != null) {
+			explodeDestroyedBlocks(init);
+		}
+
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
 
@@ -194,6 +208,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	}
 
+	protected void explodeDestroyedBlocks(Region init) {
+		if (init != null && init.getDestroyedBlocks() != null)
+			for (int i = 0; i < init.getDestroyedBlocks().size(); i++) {
+				explodeCellAt(init.getDestroyedBlocks().get(i).getLeft(), init
+						.getDestroyedBlocks().get(i).getRight());
+			}
+	}
+
 	@Override
 	public void dispose() {
 		// for sprite
@@ -220,6 +242,24 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		tiledMapRenderer.render();
 
 		batch.begin();
+
+		synchronized (mapId) {
+			if (mapId != newMapId) {
+				mapId = newMapId;
+				System.out.println("mapid:" + mapId);
+				tiledMap = new TmxMapLoader().load("maps/Map" + mapId + ".tmx");
+				tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+
+				// for collision detection
+				collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get(
+						"Fore");
+				mapheight = collisionLayer.getHeight();
+				mapwidth = collisionLayer.getWidth();
+
+				w = Gdx.graphics.getWidth();
+				h = Gdx.graphics.getHeight();
+			}
+		}
 
 		synchronized (players) {
 
@@ -282,6 +322,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 					bombSprite.remove(id);
 			}
 		}
+
 		batch.end();
 	}
 
@@ -345,8 +386,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
 					// Change the region controller
-					 camera.translate(xVar * 20, yVar * 20);
-					 camera.update();
+					camera.translate(xVar * 20, yVar * 20);
+					camera.update();
 				}
 			}
 
@@ -430,7 +471,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 							p.setSize(32.0f, 64.0f);
 							p.setPosition(player.getX() * moveAmount,
 									player.getY() * moveAmount);
-
 						}
 					}
 
@@ -459,6 +499,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 								* moveAmount);
 					}
 				}
+
+			explodeDestroyedBlocks(region);
+
+			synchronized (mapId) {
+				if (mapId != region.getMapId()) {
+					newMapId = region.getMapId();
+					System.out.println("change mapId to:" + newMapId);
+				}
+			}
 		} catch (Exception e) {
 			System.out.println(e);
 		}

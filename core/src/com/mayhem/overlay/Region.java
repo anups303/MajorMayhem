@@ -17,10 +17,12 @@ public class Region implements Serializable {
 	protected long x, y;
 	protected List<PlayerState> players;
 	protected List<BombState> bombs;
+	protected List<Pair<Integer, Integer>> destroyedBlocks;
 
 	public Region(int mapId) {
 		this.players = new CopyOnWriteArrayList<PlayerState>();
 		this.bombs = new ArrayList<BombState>();
+		this.destroyedBlocks = new ArrayList<Pair<Integer, Integer>>();
 		x = y = 0;
 		if (mapId == -1) {
 			mapId = (new Random().nextInt(10) + 1);
@@ -49,6 +51,10 @@ public class Region implements Serializable {
 		return mapId;
 	}
 
+	public List<Pair<Integer, Integer>> getDestroyedBlocks() {
+		return this.destroyedBlocks;
+	}
+
 	public boolean removePlayerById(Id playerId) {
 		int j = -1;
 		for (int i = 0; i < this.players.size(); i++) {
@@ -68,5 +74,18 @@ public class Region implements Serializable {
 	public void setPosition(long x, long y) {
 		this.x = x;
 		this.y = y;
+	}
+
+	public Region clone() {
+		Region r = new Region(this.mapId);
+		r.players = (CopyOnWriteArrayList<PlayerState>) ((CopyOnWriteArrayList<PlayerState>) this.players)
+				.clone();
+		r.bombs = (ArrayList<BombState>) ((ArrayList<BombState>) this.bombs)
+				.clone();
+		r.destroyedBlocks = (ArrayList<Pair<Integer, Integer>>) ((ArrayList<Pair<Integer, Integer>>) this.destroyedBlocks)
+				.clone();
+		r.x = this.x;
+		r.y = this.y;
+		return r;
 	}
 }

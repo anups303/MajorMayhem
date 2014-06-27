@@ -7,7 +7,7 @@ import rice.p2p.commonapi.Id;
 public class BombState implements Serializable {
 	private static final long serialVersionUID = -2509591107374397748L;
 	private Id playerId;
-	private long x, y;
+	private int x, y;
 
 	public BombState(Id playerId, int x, int y) {
 		this.playerId = playerId;
@@ -27,11 +27,11 @@ public class BombState implements Serializable {
 		return this.playerId;
 	}
 
-	public long getX() {
+	public int getX() {
 		return this.x;
 	}
 
-	public long getY() {
+	public int getY() {
 		return this.y;
 	}
 }

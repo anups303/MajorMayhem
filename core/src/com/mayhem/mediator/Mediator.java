@@ -20,32 +20,31 @@ public class Mediator {
 	protected NodeLauncher nodeLauncher;
 	protected ClientApplication app;
 
-	// Create and configure a new environment for overlay
 	public Region joinGame(String bootIp, int bootport,
 			IRegionStateListener regionStateListener) {
+		return joinGame(bootIp, bootport, regionStateListener, 9001);
+	}
 
-		int bindport;
-
+	// Create and configure a new environment for overlay
+	public Region joinGame(String bootIp, int bootport,
+			IRegionStateListener regionStateListener, int bindPort) {
 		try {
-			bindport = 9001;
 
 			if (bootIp == null)
 				bootIp = InetAddress.getLocalHost().getHostAddress();
 			// More than one instance of game running on a same machine
 			if (bootIp.equalsIgnoreCase(InetAddress.getLocalHost()
-					.getHostAddress()))
-				bindport += Math.random() * (1000);
+					.getHostAddress()) && bootport == bindPort)
+				bindPort += Math.random() * (1000);
 
 			environment = new Environment();
 
 			environment.getParameters().setString("nat_search_policy", "never");
-
 			InetAddress bootaddr = InetAddress.getByName(bootIp);
-
 			InetSocketAddress bootaddress = new InetSocketAddress(bootaddr,
 					bootport);
 
-			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment,
+			nodeLauncher = new NodeLauncher(bindPort, bootaddress, environment,
 					false, regionStateListener);
 
 			app = nodeLauncher.getApplication();

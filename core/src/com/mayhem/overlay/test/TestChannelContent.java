@@ -8,6 +8,7 @@ public class TestChannelContent extends ChannelContent {
 	NodeHandle from;
 
 	public TestChannelContent(NodeHandle from, String msg) {
+		super(null);
 		this.from = from;
 		this.message = msg;
 	}

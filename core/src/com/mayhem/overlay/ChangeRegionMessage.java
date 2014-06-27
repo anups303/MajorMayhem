@@ -15,15 +15,23 @@ public class ChangeRegionMessage extends Message {
 
 	@Override
 	public void execute(ClientApplication app) {
+		if (app.isCoordinator) {
+			if (app.leftCoordinator == this.sender)
+				app.leftCoordinator = null;
+			if (app.rightCoordinator == this.sender)
+				app.rightCoordinator = null;
+			if (app.topCoordinator == this.sender)
+				app.topCoordinator = null;
+			if (app.bottomCoordinator == this.sender)
+				app.bottomCoordinator = null;
 
-		app.region.addPlayer(new PlayerState(this.sender, this.playerX,
-				this.playerY));
-		Region r = app.getRegion();
-		app.routMessage(
-				this.getSender(),
-				new JoinReplyMessage(-1, true, app.getChannelName(), app
-						.getLocalNodeId(), r, r.x, r.y));
-		app.publishRegionState();
+			app.region.addPlayer(new PlayerState(this.sender, this.playerX,
+					this.playerY));
+			Region r = app.getRegion();
+			app.routMessage(this.getSender(), new JoinReplyMessage(-1, true,
+					app.getChannelName(), app.getLocalNodeId(), r, r.x, r.y));
+			app.publishRegionState();
+		}
 	}
 
 	public Id getSender() {

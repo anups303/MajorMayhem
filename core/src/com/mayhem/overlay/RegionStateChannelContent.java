@@ -1,13 +1,15 @@
 package com.mayhem.overlay;
 
 import java.util.List;
+import rice.p2p.commonapi.Id;
 
 public class RegionStateChannelContent extends ChannelContent {
 	private static final long serialVersionUID = 2522899394681916995L;
 
 	private Region region;
 
-	public RegionStateChannelContent(Region region) {
+	public RegionStateChannelContent(Region region, Id sender) {
+		super(sender);
 		this.region = region;
 	}
 
