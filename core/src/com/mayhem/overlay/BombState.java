@@ -14,6 +14,10 @@ public class BombState implements Serializable {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public Id getPlayerId() {
+		return playerId;
+	}
 
 	public void setX(int x) {
 		this.x = x;

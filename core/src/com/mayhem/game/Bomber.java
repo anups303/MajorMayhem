@@ -46,16 +46,19 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	class BombInfo {
 		Sprite sprite;
 		long timer;
+		Id player;
 
-		public BombInfo(Sprite sprite, long timer) {
+		public BombInfo(Sprite sprite, long timer, Id player) {
 			this.sprite = sprite;
 			this.timer = timer;
+			this.player = player;
 		}
 	}
 
 	private int moveAmount = 32;
 	private Mediator mediator;
-
+	private static final int MAX_NUMBER_OF_BOMBS = 5;
+	protected int bombCounter = 0;
 	// for sprite
 	private SpriteBatch batch;
 	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture;
@@ -277,6 +280,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				BombInfo bi = bombSprite.get(key);
 				if (System.currentTimeMillis() >= bi.timer) {
 					if (bi.sprite == flameSprite) {
+
 						toBeRemoved.add(key);
 						int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
 								.getY() / moveAmount;
@@ -318,8 +322,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				}
 			}
 			if (toBeRemoved.size() > 0) {
-				for (long id : toBeRemoved)
+				for (long id : toBeRemoved) {
 					bombSprite.remove(id);
+				}
 			}
 		}
 
@@ -396,19 +401,37 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		if (keycode == Keys.SPACE) {
 			if (mediator.bombPlacement(((int) (posX)) / moveAmount,
 					(int) (posY) / moveAmount)) {
-				addBomb(posX, posY);
 			}
 		}
 		return true;
 	}
 
-	protected void addBomb(float posX, float posY) {
-		Sprite bomb = new Sprite(bombTex);
-		bomb.setSize(32, 32);
-		bomb.setPosition(posX, posY);
+	protected void addBomb(float posX, float posY, Id player) {
+		boolean allowBombToAdd = false;
+		if (player == this.mediator.GetNodeId()) {
+			int localBombCounter = 0;
+			Iterator<Long> itr = bombSprite.keySet().iterator();
+			while (itr.hasNext()) {
+				long key = itr.next();
+				BombInfo bi = bombSprite.get(key);
+				if (bi.sprite != flameSprite
+						&& bi.player == this.mediator.GetNodeId())
+					localBombCounter++;
+			}
+			allowBombToAdd = (localBombCounter < MAX_NUMBER_OF_BOMBS);
+		} else
+			allowBombToAdd = true;
+		if (allowBombToAdd) {
 
-		bombSprite.put(new Random().nextLong(),
-				new BombInfo(bomb, System.currentTimeMillis() + 2000));
+			Sprite bomb = new Sprite(bombTex);
+			bomb.setSize(32, 32);
+			bomb.setPosition(posX, posY);
+			bombSprite.put(new Random().nextLong(),
+					new BombInfo(bomb, System.currentTimeMillis() + 3000,
+							player));
+
+		}
+
 	}
 
 	@Override
@@ -496,7 +519,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				synchronized (bombList) {
 					for (BombState bomb : bombList) {
 						addBomb(bomb.getX() * moveAmount, bomb.getY()
-								* moveAmount);
+								* moveAmount, bomb.getPlayerId());
 					}
 				}
 
