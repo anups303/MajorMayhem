@@ -2,6 +2,9 @@ package com.mayhem.game;
 
 import java.util.Random;
 
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.Region;
@@ -10,21 +13,33 @@ public class BotLauncher {
 
 	class Bot implements Runnable, IRegionStateListener {
 		Mediator mediator;
-		int x, y;
+		long x, y;
 
 		public Bot() {
 			this.mediator = new Mediator();
 		}
 
 		public void run() {
-			mediator.joinGame(null, 9001, this);
+			Integer mapId;
+			Region init = null;
+			init = mediator.joinGame(null, 9001, this);
+			if (init != null) {
+				mapId = init.getMapId();
+				for (int i = 0; i < init.getPlayers().size(); i++)
+					if (init.getPlayers().get(i).getId() == mediator
+							.GetNodeId()) {
+						x = init.getPlayers().get(i).getX();
+						y = init.getPlayers().get(i).getY();
+					}
+			}
+
 			x = y = 12;
-			mediator.updatePosition(x, y);
+			mediator.updatePosition((int) x, (int) y);
 
 			try {
 				for (;;) {
 					Thread.sleep(500);
-					int d = new Random().nextInt(3) - 1;
+					int d = new Random().nextInt(2) - 1 + 1;
 
 					if (new Random().nextInt(2) == 0)
 						x += d;
@@ -35,7 +50,7 @@ public class BotLauncher {
 						x = 1;
 					if (y < 1)
 						y = 1;
-					mediator.updatePosition(x, y);
+					mediator.updatePosition((int) x, (int) y);
 				}
 
 			} catch (Exception v) {

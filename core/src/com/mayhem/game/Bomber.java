@@ -109,6 +109,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		mediator = new Mediator();
 		Region init = null;
 		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
+		String bootsrapperIP = System.getenv("IP");
+		if (bootsrapperIP != null && bootsrapperIP.equals(""))
+			bootsrapperIP = null;
 		if (coordinator) {
 			mapId = mediator.newGame(this);
 			if (mapId == -1) {
@@ -125,7 +128,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			if (System.getenv("localPort") != null) {
 				localPort = Integer.parseInt(System.getenv("localPort"));
 			}
-			init = mediator.joinGame(null, bootstrapperPort, this, localPort);
+			init = mediator.joinGame(bootsrapperIP, bootstrapperPort, this,
+					localPort);
 			if (init == null) {
 				// TODO: Let user know about it!
 				return;
