@@ -142,6 +142,8 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public boolean SendCoordinatorMovementMessage(int x, int y) {
+		long startTime = System.currentTimeMillis();
+
 		long msgId = this.SendCoordinatorMovementMessageAsync(x, y);
 		try {
 			synchronized (lock) {
@@ -150,8 +152,13 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 					lock.wait();
 					Iterator<Long> itr = recievedAcks.keySet().iterator();
 					while (itr.hasNext())
-						if (msgId == itr.next())
+						if (msgId == itr.next()) {
+							long stopTime = System.currentTimeMillis();
+							long elapsedTime = stopTime - startTime;
+							System.out.println("MSG#" + msgId + ": "
+									+ elapsedTime + "ms");
 							return true;
+						}
 				}
 			}
 		} catch (Exception ex) {
