@@ -35,6 +35,7 @@ public class BecomeRegionControllerMessage extends Message {
 	public void execute(ClientApplication app) {
 		app.isCoordinator = true;
 		app.setRegionController(app.getLocalNodeId());
+		app.subscribe(app.getLocalNodeId().toString());
 
 		if (this.region == null) {
 			app.region = new Region(-1);
@@ -43,13 +44,25 @@ public class BecomeRegionControllerMessage extends Message {
 					playerY));
 		} else {
 			app.region = this.region;
-		}
-		app.subscribe(app.getLocalNodeId().toString());
+			Region r = app.region;
+			for (PlayerState player : app.region.getPlayers())
+				if (player.getId() != app.getLocalNodeId())
+					app.routMessage(
+							player.getId(),
+							new JoinReplyMessage(this.getMessageId(), true, app
+									.getChannelName(), app.getLocalNodeId(), r,
+									r.x, r.y));
 
+		}
+	
 		app.leftCoordinator = this.getLeftCoordinator();
 		app.rightCoordinator = this.getRightCoordinator();
 		app.topCoordinator = this.getTopCoordinator();
 		app.bottomCoordinator = this.getBottomCoordinator();
+
+		System.out.println("BecomeRegionController:" + app.getLocalNodeId()
+				+ "[" + app.leftCoordinator + "," + app.rightCoordinator + ","
+				+ app.topCoordinator + "," + app.bottomCoordinator + "]");
 
 		app.publishRegionState();
 

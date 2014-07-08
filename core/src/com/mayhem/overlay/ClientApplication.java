@@ -35,7 +35,6 @@ public class ClientApplication implements Application, ScribeClient {
 	protected Region region;
 
 	public ClientApplication(Node node, boolean isNewGame) {
-
 		this.isCoordinator = isNewGame;
 		this.node = node;
 		this.endpoint = node.buildEndpoint(this, "instance");
@@ -85,8 +84,24 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	protected void SendLeaveGameMessage(Id coordinatorHandle, Id sender) {
-		LeaveMessage msg = new LeaveMessage(sender);
-		this.routMessage(coordinatorHandle, msg);
+		if (this.isCoordinator) {
+			if (this.region.removePlayerById(sender)) {
+				// TODO: Let the neighbor coordinator know the new coordinator
+				if (this.region.players.size() > 0) {
+					Id newCoordinator = this.region.players.get(0).getId();
+					this.routMessage(newCoordinator,
+							new BecomeRegionControllerMessage(leftCoordinator,
+									rightCoordinator, topCoordinator,
+									bottomCoordinator, 0, 0, 0, 0, this.region));
+
+					this.publishRegionState(newCoordinator);
+				}
+			}
+
+		} else {
+			LeaveMessage msg = new LeaveMessage(sender);
+			this.routMessage(coordinatorHandle, msg);
+		}
 	}
 
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
@@ -107,17 +122,22 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void subscribe(String channelName) {
+		if (channelName == this.channelName)
+			return;
 		if (topic != null) {
+			System.out.println("unsubscribe form:" + topic);
 			scribe.unsubscribe(topic, this);
 		}
-		System.out.println("subscribe to:" + channelName);
+
 		this.channelName = channelName;
 		topic = new Topic(new PastryIdFactory(node.getEnvironment()),
 				channelName);
 		scribe.subscribe(topic, this);
+		System.out.println("subscribe to:" + channelName + "topic:" + topic);
 	}
 
 	public void subscribeFailed(Topic topic) {
+		System.out.println("failed to subscribe to:" + channelName + "topic:" + topic);
 	}
 
 	public boolean forward(RouteMessage message) {
@@ -140,9 +160,18 @@ public class ClientApplication implements Application, ScribeClient {
 		if (content instanceof RegionStateChannelContent) {
 			RegionStateChannelContent msg = (RegionStateChannelContent) content;
 
-			// if (msg.g)
-			for (IRegionStateListener rsl : regionStateListeners)
-				rsl.regionStateReceived(msg.getRegion());
+			if (msg.getRegion().x == this.region.x
+					&& msg.getRegion().y == this.region.y) {
+				if (!this.isCoordinator) {
+					if (this.regionController != msg.getCoordinator()) {
+						this.regionController = msg.getCoordinator();
+//						this.subscribe(this.regionController.toString());
+					}
+					this.region = msg.getRegion();
+				}
+				for (IRegionStateListener rsl : regionStateListeners)
+					rsl.regionStateReceived(msg.getRegion());
+			}
 		}
 		// System.out.println("ChannelContent received:" + topic + "," + content
 		// + ")");
@@ -196,9 +225,13 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	protected void publishRegionState() {
+		publishRegionState(this.node.getId());
+	}
+
+	protected void publishRegionState(Id coordinator) {
 		Region r = this.getRegion().clone();
 		r.destroyedBlocks = null;
-		this.publish(new RegionStateChannelContent(r, this.node.getId()));
+		this.publish(new RegionStateChannelContent(r, coordinator));
 		// this.region.destroyedBlocks.add(arg0);
 		for (BombState bs : this.region.bombs) {
 			this.region.destroyedBlocks.add(new Pair<Integer, Integer>(bs

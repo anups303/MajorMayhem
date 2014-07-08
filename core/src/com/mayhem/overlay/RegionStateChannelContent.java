@@ -7,14 +7,19 @@ public class RegionStateChannelContent extends ChannelContent {
 	private static final long serialVersionUID = 2522899394681916995L;
 
 	private Region region;
+	private Id coordinator;
 
-	public RegionStateChannelContent(Region region, Id sender) {
-		super(sender);
+	public RegionStateChannelContent(Region region, Id coordinator) {
 		this.region = region;
+		this.coordinator = coordinator;
 	}
 
 	public Region getRegion() {
 		return this.region;
+	}
+
+	public Id getCoordinator() {
+		return this.coordinator;
 	}
 
 	public String toString() {

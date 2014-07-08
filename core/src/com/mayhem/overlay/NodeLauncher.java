@@ -51,6 +51,7 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		app = clientApplicationFactory.getClientApplication(node, isNewGame);
 		node.boot(bootaddress);
 		synchronized (node) {
+			long startTime = System.currentTimeMillis();
 			while (!node.isReady() && !node.joinFailed()) {
 				// delay so we don't busy-wait
 				node.wait(500);
@@ -62,6 +63,10 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 									+ node.joinFailedReason());
 				}
 			}
+			long stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+
+			System.out.println("Join overlay: " + elapsedTime + "ms");
 		}
 
 		System.out.println("Finished creating new node " + node);
@@ -88,7 +93,7 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 						Iterator<Long> itr = recievedAcks.keySet().iterator();
 						while (itr.hasNext())
 							if (msgId == itr.next()) {
-								if (recievedAcks.get(msgId) instanceof Region) 
+								if (recievedAcks.get(msgId) instanceof Region)
 									region = (Region) recievedAcks.get(msgId);
 								return;
 							}
@@ -192,8 +197,8 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	public Id GetNodeId() {
 		return node.getId();
 	}
-	
-	public Region getRegion(){
+
+	public Region getRegion() {
 		return this.region;
 	}
 
