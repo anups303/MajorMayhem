@@ -39,7 +39,7 @@ public class BotLauncher {
 			try {
 				for (;;) {
 					Thread.sleep(500);
-					int d = new Random().nextInt(2) - 1 + 1;
+					int d = new Random().nextInt(3) - 1 ;
 
 					if (new Random().nextInt(2) == 0)
 						x += d;

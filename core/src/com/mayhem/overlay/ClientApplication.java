@@ -4,9 +4,11 @@ import java.util.*;
 
 import rice.p2p.commonapi.Application;
 import rice.p2p.commonapi.CancellableTask;
+import rice.p2p.commonapi.DeliveryNotification;
 import rice.p2p.commonapi.Endpoint;
 import rice.p2p.commonapi.Id;
 import rice.p2p.commonapi.Message;
+import rice.p2p.commonapi.MessageReceipt;
 import rice.p2p.commonapi.Node;
 import rice.p2p.commonapi.NodeHandle;
 import rice.p2p.commonapi.RouteMessage;
@@ -17,7 +19,8 @@ import rice.p2p.scribe.ScribeImpl;
 import rice.p2p.scribe.Topic;
 import rice.pastry.commonapi.PastryIdFactory;
 
-public class ClientApplication implements Application, ScribeClient {
+public class ClientApplication implements Application, ScribeClient,
+		DeliveryNotification {
 	protected List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
 	protected List<IRegionStateListener> regionStateListeners = new ArrayList<IRegionStateListener>();
 
@@ -107,7 +110,9 @@ public class ClientApplication implements Application, ScribeClient {
 	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
 		// bootHandle =
 		// ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
-		endpoint.route(id, msg, null);
+
+		MessageReceipt mr = endpoint.route(id, msg, null, this);
+
 	}
 
 	protected void routeMessageDirect(NodeHandle nh,
@@ -116,6 +121,7 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void deliver(Id id, Message message) {
+		System.out.println(message);
 		if (message instanceof com.mayhem.overlay.Message) {
 			((com.mayhem.overlay.Message) message).execute(this);
 		}
@@ -137,7 +143,8 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void subscribeFailed(Topic topic) {
-		System.out.println("failed to subscribe to:" + channelName + "topic:" + topic);
+		System.out.println("failed to subscribe to:" + channelName + "topic:"
+				+ topic);
 	}
 
 	public boolean forward(RouteMessage message) {
@@ -145,16 +152,19 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void update(NodeHandle handle, boolean joined) {
-		if (joined)
-			// TODO: may be useful to change the way of bootstrapping and
-			// problem of finding coordinator id
-			System.out.println("Added to leafset:" + handle);
-		else {
-			if (isCoordinator)
-				this.SendLeaveGameMessage(this.node.getLocalNodeHandle()
-						.getId(), handle.getId());
-		}
+
 	}
+
+	// if (joined)
+	// // TODO: may be useful to change the way of bootstrapping and
+	// // problem of finding coordinator id
+	// System.out.println("Added to leafset:" + handle);
+	// else {
+	// if (isCoordinator)
+	// this.SendLeaveGameMessage(this.node.getLocalNodeHandle()
+	// .getId(), handle.getId());
+	// }
+	// }
 
 	public void deliver(Topic topic, ScribeContent content) {
 		if (content instanceof RegionStateChannelContent) {
@@ -165,7 +175,7 @@ public class ClientApplication implements Application, ScribeClient {
 				if (!this.isCoordinator) {
 					if (this.regionController != msg.getCoordinator()) {
 						this.regionController = msg.getCoordinator();
-//						this.subscribe(this.regionController.toString());
+						// this.subscribe(this.regionController.toString());
 					}
 					this.region = msg.getRegion();
 				}
@@ -185,11 +195,11 @@ public class ClientApplication implements Application, ScribeClient {
 	}
 
 	public void childRemoved(Topic topic, NodeHandle child) {
-		if (isCoordinator) {
-			System.out.println("childRemoved");
-			this.SendLeaveGameMessage(this.node.getLocalNodeHandle().getId(),
-					child.getId());
-		}
+		// if (isCoordinator) {
+		// System.out.println("childRemoved");
+		// this.SendLeaveGameMessage(this.node.getLocalNodeHandle().getId(),
+		// child.getId());
+		// }
 	}
 
 	public void sendAnycast(String msg) {
@@ -281,5 +291,19 @@ public class ClientApplication implements Application, ScribeClient {
 
 	protected Id getLocalNodeId() {
 		return this.node.getId();
+	}
+
+	@Override
+	public void sendFailed(MessageReceipt arg0, Exception arg1) {
+		// TODO Auto-generated method stub
+		System.out.println(arg0);
+
+	}
+
+	@Override
+	public void sent(MessageReceipt arg0) {
+		System.out.println(arg0);
+		// TODO Auto-generated method stub
+
 	}
 }

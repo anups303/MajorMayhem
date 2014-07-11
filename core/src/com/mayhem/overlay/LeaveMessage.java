@@ -14,13 +14,7 @@ public class LeaveMessage extends Message {
 	@Override
 	public void execute(ClientApplication app) {
 		try {
-			// this.regionMembers.remove(msg.getSender());
-			for (int i = 0; i < app.getRegion().getPlayers().size(); i++)
-				if (app.getRegion().getPlayers().get(i).getId() == this
-						.getSender()) {
-					app.getRegion().getPlayers().remove(i);
-					break;
-				}
+			app.getRegion().removePlayerById(this.getSender());
 			System.out.println("Leave:" + this.getSender());
 			app.raiseRegionStateEvent();
 

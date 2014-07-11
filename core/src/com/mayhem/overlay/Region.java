@@ -77,15 +77,20 @@ public class Region implements Serializable {
 	}
 
 	public Region clone() {
-		Region r = new Region(this.mapId);
-		r.players = (CopyOnWriteArrayList<PlayerState>) ((CopyOnWriteArrayList<PlayerState>) this.players)
-				.clone();
-		r.bombs = (ArrayList<BombState>) ((ArrayList<BombState>) this.bombs)
-				.clone();
-		r.destroyedBlocks = (ArrayList<Pair<Integer, Integer>>) ((ArrayList<Pair<Integer, Integer>>) this.destroyedBlocks)
-				.clone();
-		r.x = this.x;
-		r.y = this.y;
-		return r;
+		try {
+			Region r = new Region(this.mapId);
+			r.players = (CopyOnWriteArrayList<PlayerState>) ((CopyOnWriteArrayList<PlayerState>) this.players)
+					.clone();
+			r.bombs = (ArrayList<BombState>) ((ArrayList<BombState>) this.bombs)
+					.clone();
+			r.destroyedBlocks = (ArrayList<Pair<Integer, Integer>>) ((ArrayList<Pair<Integer, Integer>>) this.destroyedBlocks)
+					.clone();
+			r.x = this.x;
+			r.y = this.y;
+			return r;
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+		return null;
 	}
 }
