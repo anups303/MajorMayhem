@@ -7,7 +7,9 @@ public class ChangeRegionMessage extends Message {
 	private Id sender;
 	private long playerX, playerY;
 
-	public ChangeRegionMessage(Id sender, long playerX, long playerY) {
+	public ChangeRegionMessage(Id sender, Id receiver, long playerX,
+			long playerY) {
+		 super(receiver);
 		this.sender = sender;
 		this.playerX = playerX;
 		this.playerY = playerY;
@@ -28,8 +30,11 @@ public class ChangeRegionMessage extends Message {
 			app.region.addPlayer(new PlayerState(this.sender, this.playerX,
 					this.playerY));
 			Region r = app.getRegion();
-			app.routMessage(this.getSender(), new JoinReplyMessage(-1, true,
-					app.getChannelName(), app.getLocalNodeId(), r, r.x, r.y));
+			app.routMessage(
+					this.getSender(),
+					new JoinReplyMessage(this.getSender(), -1, true, app
+							.getChannelName(), app.getLocalNodeId(), r, r.x,
+							r.y));
 			app.publishRegionState();
 		}
 	}

@@ -61,14 +61,15 @@ public class ClientApplication implements Application, ScribeClient,
 	}
 
 	public long SendJoinMessage(Id coordinatorHandle) {
-		JoinMessage msg = new JoinMessage(this.node.getId());
+		JoinMessage msg = new JoinMessage(this.node.getId(), coordinatorHandle);
 		this.routMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
 	}
 
 	public long SendMovementMessage(Id coordinatorHandle, int x, int y) {
-		MovementMessage msg = new MovementMessage(this.node.getId(), x, y);
+		MovementMessage msg = new MovementMessage(this.node.getId(),
+				coordinatorHandle, x, y);
 		this.routMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
@@ -76,7 +77,7 @@ public class ClientApplication implements Application, ScribeClient,
 
 	public long SendBombPlacementMessage(Id coordinatorHandle, int x, int y) {
 		BombPlacementMessage msg = new BombPlacementMessage(this.node.getId(),
-				x, y);
+				coordinatorHandle, x, y);
 		this.routMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
@@ -93,16 +94,17 @@ public class ClientApplication implements Application, ScribeClient,
 				if (this.region.players.size() > 0) {
 					Id newCoordinator = this.region.players.get(0).getId();
 					this.routMessage(newCoordinator,
-							new BecomeRegionControllerMessage(leftCoordinator,
-									rightCoordinator, topCoordinator,
-									bottomCoordinator, 0, 0, 0, 0, this.region));
+							new BecomeRegionControllerMessage(newCoordinator,
+									leftCoordinator, rightCoordinator,
+									topCoordinator, bottomCoordinator, 0, 0, 0,
+									0, this.region));
 
 					this.publishRegionState(newCoordinator);
 				}
 			}
 
 		} else {
-			LeaveMessage msg = new LeaveMessage(sender);
+			LeaveMessage msg = new LeaveMessage(sender, coordinatorHandle);
 			this.routMessage(coordinatorHandle, msg);
 		}
 	}
@@ -295,15 +297,18 @@ public class ClientApplication implements Application, ScribeClient,
 
 	@Override
 	public void sendFailed(MessageReceipt arg0, Exception arg1) {
-		// TODO Auto-generated method stub
-		System.out.println(arg0);
+		if (!this.isCoordinator) {
+			if (arg0.getMessage() instanceof com.mayhem.overlay.Message) {
+				com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) arg0
+						.getMessage();
+				System.out.println(msg);
+			}
+		}
 
 	}
 
 	@Override
 	public void sent(MessageReceipt arg0) {
-		System.out.println(arg0);
-		// TODO Auto-generated method stub
-
+		// System.out.println(arg0);
 	}
 }

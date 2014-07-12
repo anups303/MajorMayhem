@@ -1,12 +1,16 @@
 package com.mayhem.overlay;
 
+import rice.p2p.commonapi.Id;
+
 public class ActionAcknowledgmentMessage extends Message {
 	private static final long serialVersionUID = -5801612284171523108L;
 
 	long actionMessageId;
 	boolean valid;
 
-	public ActionAcknowledgmentMessage(long actionMessageId, boolean valid) {
+	public ActionAcknowledgmentMessage(Id receiver, long actionMessageId,
+			boolean valid) {
+		super(receiver);
 		this.actionMessageId = actionMessageId;
 		this.valid = valid;
 	}

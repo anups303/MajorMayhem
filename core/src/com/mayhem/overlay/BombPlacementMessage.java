@@ -5,10 +5,11 @@ import rice.p2p.commonapi.Id;
 public class BombPlacementMessage extends Message {
 	private static final long serialVersionUID = 4266857723473558476L;
 	private Id sender;
-	private long messageId;
+	// private long messageId;
 	private int x, y;
 
-	public BombPlacementMessage(Id sender, int x, int y) {
+	public BombPlacementMessage(Id sender, Id receiver, int x, int y) {
+		super(receiver);
 		this.sender = sender;
 		this.x = x;
 		this.y = y;
@@ -18,8 +19,10 @@ public class BombPlacementMessage extends Message {
 		// TODO: validating the bomb
 		// in case of valid bomb placement, coordinator must acknowledge it.
 
-		app.routMessage(this.getSender(),
-				new ActionAcknowledgmentMessage(this.getMessageId(), true));
+		app.routMessage(
+				this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this
+						.getMessageId(), true));
 
 		// Then Coordinator has to propagate new game state on the channel
 		app.addBomb(new BombState(this.getSender(), this.getX(), this.getY()));
@@ -38,7 +41,7 @@ public class BombPlacementMessage extends Message {
 		return this.y;
 	}
 
-	public long getMessageId() {
-		return messageId;
-	}
+	// public long getMessageId() {
+	// return messageId;
+	// }
 }

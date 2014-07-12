@@ -1,7 +1,5 @@
 package com.mayhem.overlay;
 
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader.Setters.Bones;
-
 import rice.p2p.commonapi.Id;
 
 public class MovementMessage extends Message implements IAcknowledgeable {
@@ -9,7 +7,8 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 	private Id sender;
 	private int x, y;
 
-	public MovementMessage(Id sender, int x, int y) {
+	public MovementMessage(Id sender, Id receiver, int x, int y) {
+		super(receiver);
 		this.sender = sender;
 		this.x = x;
 		this.y = y;
@@ -17,8 +16,10 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	@Override
 	public void execute(ClientApplication app) {
-		app.routMessage(this.getSender(),
-				new ActionAcknowledgmentMessage(this.getMessageId(), true));
+		app.routMessage(
+				this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this
+						.getMessageId(), true));
 
 		for (PlayerState player : app.region.getPlayers()) {
 			if (player.getId() == this.getSender()) {
@@ -87,52 +88,59 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 				// to an empty region
 				if (app.region.players.size() == 0) {
 					app.routMessage(this.getSender(),
-							new BecomeRegionControllerMessage(null, null, null,
-									null, this.x, this.y, x, y));
+							new BecomeRegionControllerMessage(this.getSender(),
+									null, null, null, null, this.x, this.y, x,
+									y));
 				} else {
 					Id newCoordinator = app.region.players.get(0).getId();
-					
+
 					app.publishRegionState(newCoordinator);
-					
-					Id l = null, r = null, t = null, b = null;
+
+					// Id l = null, r = null, t = null, b = null;
 					if (leftCoordinator != null) {
 						app.routMessage(newCoordinator,
-								new BecomeRegionControllerMessage(null,
-										leftCoordinator, null, null, 0, 0, 0,
-										0, app.region));
-
-						app.routMessage(this.getSender(),
 								new BecomeRegionControllerMessage(
-										newCoordinator, null, null, null,
-										this.x, this.y, x, y));
+										newCoordinator, null, leftCoordinator,
+										null, null, 0, 0, 0, 0, app.region));
+
+						app.routMessage(
+								this.getSender(),
+								new BecomeRegionControllerMessage(this
+										.getSender(), newCoordinator, null,
+										null, null, this.x, this.y, x, y));
 					} else if (rightCoordinator != null) {
 						app.routMessage(newCoordinator,
-								new BecomeRegionControllerMessage(rightCoordinator,
-										null, null, null, 0, 0, 0,
-										0, app.region));
-
-						app.routMessage(this.getSender(),
 								new BecomeRegionControllerMessage(
-										null, newCoordinator, null, null,
-										this.x, this.y, x, y));
+										newCoordinator, rightCoordinator, null,
+										null, null, 0, 0, 0, 0, app.region));
+
+						app.routMessage(
+								this.getSender(),
+								new BecomeRegionControllerMessage(this
+										.getSender(), null, newCoordinator,
+										null, null, this.x, this.y, x, y));
 					} else if (bottomCoordinator != null) {
 						app.routMessage(newCoordinator,
-								new BecomeRegionControllerMessage(null, null,
+								new BecomeRegionControllerMessage(
+										newCoordinator, null, null,
 										bottomCoordinator, null, 0, 0, 0, 0,
 										app.region));
 
-						app.routMessage(this.getSender(),
-								new BecomeRegionControllerMessage(null, null,
-										null, newCoordinator, this.x, this.y,
-										x, y));
-					}else if (topCoordinator != null) {
+						app.routMessage(
+								this.getSender(),
+								new BecomeRegionControllerMessage(this
+										.getSender(), null, null, null,
+										newCoordinator, this.x, this.y, x, y));
+					} else if (topCoordinator != null) {
 						app.routMessage(newCoordinator,
-								new BecomeRegionControllerMessage(null, null,
-										null, topCoordinator, 0, 0, 0, 0,
-										app.region));
+								new BecomeRegionControllerMessage(
+										newCoordinator, null, null, null,
+										topCoordinator, 0, 0, 0, 0, app.region));
 
-						app.routMessage(this.getSender(),
-								new BecomeRegionControllerMessage(null, null,
+						app.routMessage(
+								this.getSender(),
+								new BecomeRegionControllerMessage(this
+										.getSender(), null, null,
 										newCoordinator, null, this.x, this.y,
 										x, y));
 					}
@@ -140,9 +148,10 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 			} else {
 				result = this.getSender();
 				app.routMessage(this.getSender(),
-						new BecomeRegionControllerMessage(leftCoordinator,
-								rightCoordinator, topCoordinator,
-								bottomCoordinator, this.x, this.y, x, y));
+						new BecomeRegionControllerMessage(this.getSender(),
+								leftCoordinator, rightCoordinator,
+								topCoordinator, bottomCoordinator, this.x,
+								this.y, x, y));
 			}
 		} else {
 			// I'm the only one in the region and I'm leaving
@@ -151,7 +160,8 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 				app.isCoordinator = false;
 			}
 			app.routMessage(coordinator,
-					new ChangeRegionMessage(this.getSender(), this.x, this.y));
+					new ChangeRegionMessage(this.getSender(), coordinator,
+							this.x, this.y));
 		}
 		return result;
 	}

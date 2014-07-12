@@ -6,7 +6,8 @@ public class JoinMessage extends Message {
 	private static final long serialVersionUID = -3322417816542869716L;
 	Id sender;
 
-	public JoinMessage(Id sender) {
+	public JoinMessage(Id sender, Id receiver) {
+		super(receiver);
 		this.sender = sender;
 	}
 
@@ -19,11 +20,10 @@ public class JoinMessage extends Message {
 					new PlayerState(this.getSender(), r.x + 1, r.y + 1));
 			System.out.println("Join:" + this.getSender());
 
-			app.routMessage(
-					this.getSender(),
-					new JoinReplyMessage(this.getMessageId(), true, app
-							.getChannelName(), app.getLocalNodeId(), r, r.x,
-							r.y));
+			app.routMessage(this.getSender(),
+					new JoinReplyMessage(this.getSender(), this.getMessageId(),
+							true, app.getChannelName(), app.getLocalNodeId(),
+							r, r.x, r.y));
 		}
 		// Otherwise I will forward the message to my coordinator, he may
 		// help him

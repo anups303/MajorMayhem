@@ -7,7 +7,8 @@ public class LeaveMessage extends Message {
 
 	Id sender;
 
-	public LeaveMessage(Id sender) {
+	public LeaveMessage(Id sender, Id receiver) {
+		super(receiver);
 		this.sender = sender;
 	}
 

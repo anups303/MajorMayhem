@@ -10,16 +10,17 @@ public class BecomeRegionControllerMessage extends Message {
 	private long playerX, playerY, regionX, regionY;
 	private Region region;
 
-	public BecomeRegionControllerMessage(Id leftCoordinator,
+	public BecomeRegionControllerMessage(Id receiver, Id leftCoordinator,
 			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
 			long x, long y, long regionX, long regionY) {
-		this(leftCoordinator, rightCoordinator, topCoordinator,
+		this(receiver, leftCoordinator, rightCoordinator, topCoordinator,
 				bottomCoordinator, x, y, regionX, regionY, null);
 	}
 
-	public BecomeRegionControllerMessage(Id leftCoordinator,
+	public BecomeRegionControllerMessage(Id receiver, Id leftCoordinator,
 			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
 			long x, long y, long regionX, long regionY, Region region) {
+		super(receiver);
 		this.rightCoordinator = rightCoordinator;
 		this.leftCoordinator = leftCoordinator;
 		this.topCoordinator = topCoordinator;
@@ -49,12 +50,13 @@ public class BecomeRegionControllerMessage extends Message {
 				if (player.getId() != app.getLocalNodeId())
 					app.routMessage(
 							player.getId(),
-							new JoinReplyMessage(this.getMessageId(), true, app
-									.getChannelName(), app.getLocalNodeId(), r,
-									r.x, r.y));
+							new JoinReplyMessage(player.getId(), this
+									.getMessageId(), true,
+									app.getChannelName(), app.getLocalNodeId(),
+									r, r.x, r.y));
 
 		}
-	
+
 		app.leftCoordinator = this.getLeftCoordinator();
 		app.rightCoordinator = this.getRightCoordinator();
 		app.topCoordinator = this.getTopCoordinator();

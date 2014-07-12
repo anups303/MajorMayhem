@@ -9,10 +9,10 @@ public class JoinReplyMessage extends ActionAcknowledgmentMessage {
 	private Region region;
 	private long playerX, playerY;
 
-	public JoinReplyMessage(long actionMessageId, boolean valid,
+	public JoinReplyMessage(Id receiver, long actionMessageId, boolean valid,
 			String channelName, Id coordinatorId, Region region, long playerX,
 			long playerY) {
-		super(actionMessageId, valid);
+		super(receiver, actionMessageId, valid);
 
 		this.channelName = channelName;
 		this.coordinatorId = coordinatorId;
