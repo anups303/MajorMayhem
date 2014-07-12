@@ -4,8 +4,10 @@ package com.mayhem.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -32,6 +34,8 @@ import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
 
+import com.mayhem.game.Timer;
+
 //for randomization
 import java.util.*;
 
@@ -55,13 +59,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 	}
 
+	private BitmapFont hudFont;
+	private Timer timer;
 	private int moveAmount = 32;
 	private Mediator mediator;
 	private static final int MAX_NUMBER_OF_BOMBS = 5;
 	protected int bombCounter = 0;
 	// for sprite
-	private SpriteBatch batch;
-	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture;
+	private SpriteBatch batch,hudSB;
+	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture, hudTexture;
 	private Sprite sprite, flameSprite;
 	private HashMap<Long, BombInfo> bombSprite;
 	private HashMap<Id, Sprite> players;
@@ -70,7 +76,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private float posX, posY;
 
 	// for camera
-	private OrthographicCamera camera;
+	private OrthographicCamera camera,hudCam;
 
 	// for map
 	private TiledMap tiledMap;
@@ -90,8 +96,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		// for sprite
 		batch = new SpriteBatch();
+		hudSB = new SpriteBatch();
+		hudFont = new BitmapFont();
+		hudFont.scale(0.75f);
+		timer = new Timer();
+		timer.start();
 		flameTexture = new Texture(Gdx.files.internal("Explosion_CN.png"));
 		texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));
+		hudTexture = new Texture(Gdx.files.internal("hudbg1.png"));
 		textureOfOtherPlayers = new Texture(
 				Gdx.files.internal("Bman_f_f01.png"));
 		sprite = new Sprite(texture);
@@ -208,6 +220,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// camera.position.x = posX;
 		// camera.position.y = posY;
 		camera.update();
+		
+		//for HUD camera
+		hudCam = new OrthographicCamera(w,h);
+		
 
 		sprite.setPosition(posX, posY);
 		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
@@ -228,8 +244,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for sprite
 		mediator.leaveGame();
 		batch.dispose();
+		hudSB.dispose();
 		texture.dispose();
 		textureOfOtherPlayers.dispose();
+		flameTexture.dispose();
+		hudTexture.dispose();
 	}
 
 	@Override
@@ -243,11 +262,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		// for camera
 		batch.setProjectionMatrix(camera.combined);
+		//hudSB.setProjectionMatrix(camera.combined);		//do not set projection matrix!
+		//hudCam.position.set(x, y, z)
 
 		// for map
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
 
+		//hudSB.enableBlending();			//not needed? will try with external transparency
 		batch.begin();
 
 		synchronized (mapId) {
@@ -333,6 +355,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		batch.end();
+		
+		//start different sprite batch for heads up display
+		hudSB.begin();
+		hudSB.draw(hudTexture, 0, 565);
+		hudFont.setColor(Color.YELLOW);
+		
+		hudFont.draw(hudSB, "Time: "+timer.elapsedTime(), 50, 595);
+		hudSB.end();
 	}
 
 	protected void explodeCellAt(int x, int y) {
