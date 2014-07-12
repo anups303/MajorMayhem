@@ -48,7 +48,7 @@ public class BecomeRegionControllerMessage extends Message {
 			Region r = app.region;
 			for (PlayerState player : app.region.getPlayers())
 				if (player.getId() != app.getLocalNodeId())
-					app.routMessage(
+					app.routeMessage(
 							player.getId(),
 							new JoinReplyMessage(player.getId(), this
 									.getMessageId(), true,
@@ -58,9 +58,28 @@ public class BecomeRegionControllerMessage extends Message {
 		}
 
 		app.leftCoordinator = this.getLeftCoordinator();
+		if (app.leftCoordinator != null)
+			app.routeMessage(app.leftCoordinator,
+					new NeighborCoordinatorChangedMessage(app.leftCoordinator,
+							app.getLocalNodeId(), 1));
+
 		app.rightCoordinator = this.getRightCoordinator();
+		if (app.rightCoordinator != null)
+			app.routeMessage(app.rightCoordinator,
+					new NeighborCoordinatorChangedMessage(app.rightCoordinator,
+							app.getLocalNodeId(), 0));
+
 		app.topCoordinator = this.getTopCoordinator();
+		if (app.topCoordinator != null)
+			app.routeMessage(app.topCoordinator,
+					new NeighborCoordinatorChangedMessage(app.topCoordinator,
+							app.getLocalNodeId(), 3));
+
 		app.bottomCoordinator = this.getBottomCoordinator();
+		if (app.bottomCoordinator != null)
+			app.routeMessage(app.bottomCoordinator,
+					new NeighborCoordinatorChangedMessage(
+							app.bottomCoordinator, app.getLocalNodeId(), 2));
 
 		System.out.println("BecomeRegionController:" + app.getLocalNodeId()
 				+ "[" + app.leftCoordinator + "," + app.rightCoordinator + ","

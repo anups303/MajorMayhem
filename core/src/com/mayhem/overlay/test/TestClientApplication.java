@@ -14,7 +14,7 @@ public class TestClientApplication extends ClientApplication {
 	}
 	
 	public void SendTestMessage(Id id, String msg) {
-		routMessage(id, new TestMessage(msg));
+		routeMessage(id, new TestMessage(msg));
 	}
 	
 	public void SendTestMessage(NodeHandle hn, String msg) {

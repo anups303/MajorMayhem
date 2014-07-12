@@ -62,7 +62,7 @@ public class ClientApplication implements Application, ScribeClient,
 
 	public long SendJoinMessage(Id coordinatorHandle) {
 		JoinMessage msg = new JoinMessage(this.node.getId(), coordinatorHandle);
-		this.routMessage(coordinatorHandle, msg);
+		this.routeMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
 	}
@@ -70,7 +70,7 @@ public class ClientApplication implements Application, ScribeClient,
 	public long SendMovementMessage(Id coordinatorHandle, int x, int y) {
 		MovementMessage msg = new MovementMessage(this.node.getId(),
 				coordinatorHandle, x, y);
-		this.routMessage(coordinatorHandle, msg);
+		this.routeMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
 	}
@@ -78,7 +78,7 @@ public class ClientApplication implements Application, ScribeClient,
 	public long SendBombPlacementMessage(Id coordinatorHandle, int x, int y) {
 		BombPlacementMessage msg = new BombPlacementMessage(this.node.getId(),
 				coordinatorHandle, x, y);
-		this.routMessage(coordinatorHandle, msg);
+		this.routeMessage(coordinatorHandle, msg);
 
 		return msg.getMessageId();
 	}
@@ -93,7 +93,7 @@ public class ClientApplication implements Application, ScribeClient,
 				// TODO: Let the neighbor coordinator know the new coordinator
 				if (this.region.players.size() > 0) {
 					Id newCoordinator = this.region.players.get(0).getId();
-					this.routMessage(newCoordinator,
+					this.routeMessage(newCoordinator,
 							new BecomeRegionControllerMessage(newCoordinator,
 									leftCoordinator, rightCoordinator,
 									topCoordinator, bottomCoordinator, 0, 0, 0,
@@ -105,11 +105,11 @@ public class ClientApplication implements Application, ScribeClient,
 
 		} else {
 			LeaveMessage msg = new LeaveMessage(sender, coordinatorHandle);
-			this.routMessage(coordinatorHandle, msg);
+			this.routeMessage(coordinatorHandle, msg);
 		}
 	}
 
-	protected void routMessage(Id id, com.mayhem.overlay.Message msg) {
+	protected void routeMessage(Id id, com.mayhem.overlay.Message msg) {
 		// bootHandle =
 		// ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
 
@@ -123,9 +123,14 @@ public class ClientApplication implements Application, ScribeClient,
 	}
 
 	public void deliver(Id id, Message message) {
-		System.out.println(message);
 		if (message instanceof com.mayhem.overlay.Message) {
-			((com.mayhem.overlay.Message) message).execute(this);
+			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
+			// We have received a message which doesn't belong to us!
+			if (this.getLocalNodeId() != msg.getReceiver()) {
+				System.out
+						.println(this.getLocalNodeId() + "received" + message);
+			}
+			msg.execute(this);
 		}
 	}
 
@@ -301,10 +306,26 @@ public class ClientApplication implements Application, ScribeClient,
 			if (arg0.getMessage() instanceof com.mayhem.overlay.Message) {
 				com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) arg0
 						.getMessage();
-				System.out.println(msg);
+				System.out.println("failed to send:" + msg);
+
+				if (this.region.players.size() > 1) {
+					PlayerState newCoordinator = this.region.players.get(1);
+
+					endpoint.route(
+							newCoordinator.getId(),
+							new BecomeRegionControllerMessage(newCoordinator
+									.getId(), leftCoordinator,
+									rightCoordinator, topCoordinator,
+									bottomCoordinator, newCoordinator.getX(),
+									newCoordinator.getY(), region.x, region.y,
+									region), null, this);
+
+					// if (newCoordinator.getId() == this.getLocalNodeId()) {
+					//
+					// }
+				}
 			}
 		}
-
 	}
 
 	@Override

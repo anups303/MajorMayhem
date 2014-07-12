@@ -155,8 +155,8 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 						if (msgId == itr.next()) {
 							long stopTime = System.currentTimeMillis();
 							long elapsedTime = stopTime - startTime;
-							System.out.println("MSG#" + msgId + ": "
-									+ elapsedTime + "ms");
+//							System.out.println("MSG#" + msgId + ": "
+//									+ elapsedTime + "ms");
 							return true;
 						}
 				}

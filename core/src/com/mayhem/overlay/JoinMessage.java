@@ -20,7 +20,7 @@ public class JoinMessage extends Message {
 					new PlayerState(this.getSender(), r.x + 1, r.y + 1));
 			System.out.println("Join:" + this.getSender());
 
-			app.routMessage(this.getSender(),
+			app.routeMessage(this.getSender(),
 					new JoinReplyMessage(this.getSender(), this.getMessageId(),
 							true, app.getChannelName(), app.getLocalNodeId(),
 							r, r.x, r.y));
@@ -28,7 +28,7 @@ public class JoinMessage extends Message {
 		// Otherwise I will forward the message to my coordinator, he may
 		// help him
 		else {
-			app.routMessage(app.getRegionController(), this);
+			app.routeMessage(app.getRegionController(), this);
 		}
 	}
 

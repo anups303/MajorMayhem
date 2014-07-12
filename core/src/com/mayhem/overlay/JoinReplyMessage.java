@@ -48,4 +48,12 @@ public class JoinReplyMessage extends ActionAcknowledgmentMessage {
 		return this.region;
 	}
 
+	public long getPlayerX() {
+		return this.playerX;
+	}
+
+	public long getPlayerY() {
+		return this.playerY;
+	}
+
 }

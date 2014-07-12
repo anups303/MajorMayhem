@@ -14,9 +14,11 @@ public class BotLauncher {
 	class Bot implements Runnable, IRegionStateListener {
 		Mediator mediator;
 		long x, y;
+		Random r;
 
 		public Bot() {
 			this.mediator = new Mediator();
+			r = new Random();
 		}
 
 		public void run() {
@@ -37,22 +39,32 @@ public class BotLauncher {
 			mediator.updatePosition((int) x, (int) y);
 
 			try {
-				for (;;) {
-					Thread.sleep(500);
-					int d = new Random().nextInt(3) - 1 ;
+				while (true) {
 
-					if (new Random().nextInt(2) == 0)
-						x += d;
-					else
-						y += d;
+					long dX = x + r.nextInt(20) - 10, dY = y + r.nextInt(20)
+							- 10;
+					if (dX < 2)
+						dX = 2;
+					if (dY < 2)
+						dY = 2;
+					System.out.println("(" + dX + "," + dY + ")");
 
-					if (x < 1)
-						x = 1;
-					if (y < 1)
-						y = 1;
-					mediator.updatePosition((int) x, (int) y);
+					// boolean flag = false;
+					while (!(x == dX && y == dY)) {
+						Thread.sleep(2 * 500);
+
+						if (x < dX) {
+							x++;
+						} else if (x > dX) {
+							x--;
+						} else if (y < dY) {
+							y++;
+						} else if (y > dY) {
+							y--;
+						}
+						mediator.updatePosition((int) x, (int) y);
+					}
 				}
-
 			} catch (Exception v) {
 				System.out.println(v);
 			}

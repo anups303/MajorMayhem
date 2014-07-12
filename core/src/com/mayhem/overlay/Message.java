@@ -14,10 +14,6 @@ public class Message implements rice.p2p.commonapi.Message {
 		this.receiver = receiver;
 	}
 
-//	public Message() {
-//		this(null);
-//	}
-
 	public int getPriority() {
 		return Message.LOW_PRIORITY;
 	}
@@ -32,6 +28,10 @@ public class Message implements rice.p2p.commonapi.Message {
 
 	public Id getReceiver() {
 		return this.receiver;
+	}
+
+	public long getSentTime() {
+		return this.sentTime;
 	}
 
 	@Override

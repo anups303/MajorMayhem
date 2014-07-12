@@ -19,7 +19,7 @@ public class BombPlacementMessage extends Message {
 		// TODO: validating the bomb
 		// in case of valid bomb placement, coordinator must acknowledge it.
 
-		app.routMessage(
+		app.routeMessage(
 				this.getSender(),
 				new ActionAcknowledgmentMessage(this.getSender(), this
 						.getMessageId(), true));

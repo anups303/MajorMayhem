@@ -16,7 +16,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	@Override
 	public void execute(ClientApplication app) {
-		app.routMessage(
+		app.routeMessage(
 				this.getSender(),
 				new ActionAcknowledgmentMessage(this.getSender(), this
 						.getMessageId(), true));
@@ -87,57 +87,62 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 				// I'm the only one in the region and I'm moving
 				// to an empty region
 				if (app.region.players.size() == 0) {
-					app.routMessage(this.getSender(),
+					app.routeMessage(this.getSender(),
 							new BecomeRegionControllerMessage(this.getSender(),
 									null, null, null, null, this.x, this.y, x,
 									y));
-				} else {
+				}
+				// There are some other guys in region
+				// I choose the first one as the new region controller
+				// and I set myself as a the region controller of the new region
+				// that I'm moving in
+				else {
 					Id newCoordinator = app.region.players.get(0).getId();
 
 					app.publishRegionState(newCoordinator);
 
 					// Id l = null, r = null, t = null, b = null;
 					if (leftCoordinator != null) {
-						app.routMessage(newCoordinator,
+						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, leftCoordinator,
 										null, null, 0, 0, 0, 0, app.region));
 
-						app.routMessage(
+						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), newCoordinator, null,
 										null, null, this.x, this.y, x, y));
 					} else if (rightCoordinator != null) {
-						app.routMessage(newCoordinator,
+						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, rightCoordinator, null,
 										null, null, 0, 0, 0, 0, app.region));
 
-						app.routMessage(
+						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, newCoordinator,
 										null, null, this.x, this.y, x, y));
 					} else if (bottomCoordinator != null) {
-						app.routMessage(newCoordinator,
+						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, null,
 										bottomCoordinator, null, 0, 0, 0, 0,
 										app.region));
 
-						app.routMessage(
+						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, null, null,
 										newCoordinator, this.x, this.y, x, y));
 					} else if (topCoordinator != null) {
-						app.routMessage(newCoordinator,
+						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, null, null,
 										topCoordinator, 0, 0, 0, 0, app.region));
 
-						app.routMessage(
+						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, null,
@@ -145,21 +150,37 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 										x, y));
 					}
 				}
-			} else {
+			}
+			// If I'm not region controller and I'm moving to a new region,
+			// I should become the region controller of the new region
+			else {
 				result = this.getSender();
-				app.routMessage(this.getSender(),
+				app.routeMessage(this.getSender(),
 						new BecomeRegionControllerMessage(this.getSender(),
 								leftCoordinator, rightCoordinator,
 								topCoordinator, bottomCoordinator, this.x,
 								this.y, x, y));
 			}
 		} else {
-			// I'm the only one in the region and I'm leaving
-			// so I shouldn't be coordinator anymore
-			if (app.region.players.size() == 0) {
+
+			// If I'm the region controller
+			if (app.node.getId() == this.getSender()) {
 				app.isCoordinator = false;
+
+				// I should let the next node in the region to become
+				// regionController
+				if (app.region.players.size() > 0) {
+					Id newCoordinator = app.region.players.get(0).getId();
+					app.publishRegionState(newCoordinator);
+
+					app.routeMessage(newCoordinator,
+							new BecomeRegionControllerMessage(newCoordinator,
+									app.leftCoordinator, app.rightCoordinator,
+									app.topCoordinator, app.bottomCoordinator,
+									0, 0, 0, 0, app.region));
+				}
 			}
-			app.routMessage(coordinator,
+			app.routeMessage(coordinator,
 					new ChangeRegionMessage(this.getSender(), coordinator,
 							this.x, this.y));
 		}
