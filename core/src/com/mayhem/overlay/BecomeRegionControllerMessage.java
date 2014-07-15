@@ -20,7 +20,7 @@ public class BecomeRegionControllerMessage extends Message {
 	public BecomeRegionControllerMessage(Id receiver, Id leftCoordinator,
 			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
 			long x, long y, long regionX, long regionY, Region region) {
-		super(receiver);
+		super(null, receiver);
 		this.rightCoordinator = rightCoordinator;
 		this.leftCoordinator = leftCoordinator;
 		this.topCoordinator = topCoordinator;

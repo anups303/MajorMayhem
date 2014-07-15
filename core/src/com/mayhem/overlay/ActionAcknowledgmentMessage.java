@@ -10,7 +10,7 @@ public class ActionAcknowledgmentMessage extends Message {
 
 	public ActionAcknowledgmentMessage(Id receiver, long actionMessageId,
 			boolean valid) {
-		super(receiver);
+		super(null, receiver);
 		this.actionMessageId = actionMessageId;
 		this.valid = valid;
 	}

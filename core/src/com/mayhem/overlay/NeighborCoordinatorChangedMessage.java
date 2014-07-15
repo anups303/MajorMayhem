@@ -9,7 +9,7 @@ public class NeighborCoordinatorChangedMessage extends Message {
 
 	public NeighborCoordinatorChangedMessage(Id receiver, Id newCoordinator,
 			int location) {
-		super(receiver);
+		super(null, receiver);
 		this.newCoordinator = newCoordinator;
 		this.location = location;
 	}

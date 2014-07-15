@@ -6,12 +6,13 @@ public class Message implements rice.p2p.commonapi.Message {
 	private static final long serialVersionUID = -537925666393304992L;
 	private long messageId;
 	private long sentTime;
-	private Id receiver;
+	private Id receiver, sender;
 
-	public Message(Id receiver) {
+	public Message(Id sender, Id receiver) {
 		messageId = new java.util.Random().nextLong();
 		sentTime = System.currentTimeMillis();
 		this.receiver = receiver;
+		this.sender = sender;
 	}
 
 	public int getPriority() {
@@ -24,6 +25,10 @@ public class Message implements rice.p2p.commonapi.Message {
 
 	public long getMessageId() {
 		return messageId;
+	}
+
+	public Id getSender() {
+		return this.sender;
 	}
 
 	public Id getReceiver() {

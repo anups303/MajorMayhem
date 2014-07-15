@@ -64,6 +64,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private int moveAmount = 32;
 	private Mediator mediator;
 	private static final int MAX_NUMBER_OF_BOMBS = 5;
+	private static final int BOMB_EXPLOSION_TIME = 1000;// mili second
 	protected int bombCounter = 0;
 	// for sprite
 	private SpriteBatch batch,hudSB;
@@ -321,7 +322,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 					bi.sprite = flameSprite;
 
-					bi.timer += 1000;
+					bi.timer += BOMB_EXPLOSION_TIME;
 				} else {
 					bi.sprite.draw(batch);
 					if (bi.sprite == flameSprite) {
@@ -370,6 +371,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
 			collisionLayer.setCell(x, y, null);
 		}
+		if (posX / moveAmount == x && posY / moveAmount == y) {
+			dispose();
+		}
 	}
 
 	@Override
@@ -409,19 +413,30 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		cell = collisionLayer.getCell(((int) (posX + xVar)) / moveAmount,
 				(int) (posY + yVar) / moveAmount);
 
-		if (cell == null
-				|| (cell != null && !cell.getTile().getProperties()
-						.containsKey("blocked"))) {
+		boolean collisionWithBombFlag = false;
+		if (bombSprite.size() > 0) {
+			Iterator<Long> itr = bombSprite.keySet().iterator();
+			while (itr.hasNext()) {
+				long key = itr.next();
+				BombInfo bi = bombSprite.get(key);
+				if (bi.sprite.getX() == posX + xVar
+						&& bi.sprite.getY() == posY + yVar) {
+					collisionWithBombFlag = true;
+					break;
+				}
+			}
+		}
 
+		if ((!collisionWithBombFlag)
+				&& (cell == null || (cell != null && !cell.getTile()
+						.getProperties().containsKey("blocked")))) {
 			int xMod = ((int) (posX / moveAmount)) / 20;
 			int yMod = ((int) (posY / moveAmount)) / 20;
 			posX += xVar;
 			posY += yVar;
 			if (mediator.updatePosition(((int) (posX)) / moveAmount,
 					(int) (posY) / moveAmount)) {
-
 				sprite.setPosition(posX, posY);
-
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
 					// Change the region controller
@@ -429,7 +444,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 					camera.update();
 				}
 			}
-
 		}
 
 		if (keycode == Keys.SPACE) {

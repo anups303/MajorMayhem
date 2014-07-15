@@ -24,7 +24,7 @@ public class BotLauncher {
 		public void run() {
 			Integer mapId;
 			Region init = null;
-			init = mediator.joinGame(null, 9001, this);
+			init = mediator.joinGame("130.83.166.245", 9001, this);
 			if (init != null) {
 				mapId = init.getMapId();
 				for (int i = 0; i < init.getPlayers().size(); i++)

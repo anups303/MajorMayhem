@@ -4,22 +4,19 @@ import rice.p2p.commonapi.Id;
 
 public class MovementMessage extends Message implements IAcknowledgeable {
 	private static final long serialVersionUID = 6561350713073687226L;
-	private Id sender;
 	private int x, y;
 
 	public MovementMessage(Id sender, Id receiver, int x, int y) {
-		super(receiver);
-		this.sender = sender;
+		super(sender, receiver);
 		this.x = x;
 		this.y = y;
 	}
 
 	@Override
 	public void execute(ClientApplication app) {
-		app.routeMessage(
-				this.getSender(),
-				new ActionAcknowledgmentMessage(this.getSender(), this
-						.getMessageId(), true));
+		app.routeMessage(this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this.getMessageId(),
+						true));
 
 		for (PlayerState player : app.region.getPlayers()) {
 			if (player.getId() == this.getSender()) {
@@ -185,10 +182,6 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 							this.x, this.y));
 		}
 		return result;
-	}
-
-	public Id getSender() {
-		return this.sender;
 	}
 
 	public int getX() {

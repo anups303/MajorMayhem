@@ -4,13 +4,10 @@ import rice.p2p.commonapi.Id;
 
 public class BombPlacementMessage extends Message {
 	private static final long serialVersionUID = 4266857723473558476L;
-	private Id sender;
-	// private long messageId;
 	private int x, y;
 
 	public BombPlacementMessage(Id sender, Id receiver, int x, int y) {
-		super(receiver);
-		this.sender = sender;
+		super(sender,receiver);
 		this.x = x;
 		this.y = y;
 	}
@@ -27,10 +24,6 @@ public class BombPlacementMessage extends Message {
 		// Then Coordinator has to propagate new game state on the channel
 		app.addBomb(new BombState(this.getSender(), this.getX(), this.getY()));
 		app.publishRegionState();
-	}
-
-	public Id getSender() {
-		return this.sender;
 	}
 
 	public int getX() {
