@@ -96,4 +96,14 @@ public class Region implements Serializable {
 		}
 		return null;
 	}
+
+	public void increaseScore(Id player) {
+		for (int i = 0; i < this.players.size(); i++) {
+			if (this.players.get(i).getId() == player) {
+				this.players.get(i).increaseScore();
+				break;
+			}
+		}
+
+	}
 }

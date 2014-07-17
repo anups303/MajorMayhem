@@ -60,6 +60,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	private BitmapFont hudFont;
+	private int score;
 	private Timer timer;
 	private int moveAmount = 32;
 	private Mediator mediator;
@@ -67,8 +68,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private static final int BOMB_EXPLOSION_TIME = 1000;// mili second
 	protected int bombCounter = 0;
 	// for sprite
-	private SpriteBatch batch,hudSB;
-	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture, hudTexture;
+	private SpriteBatch batch, hudSB;
+	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture,
+			hudTexture;
 	private Sprite sprite, flameSprite;
 	private HashMap<Long, BombInfo> bombSprite;
 	private HashMap<Id, Sprite> players;
@@ -77,7 +79,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private float posX, posY;
 
 	// for camera
-	private OrthographicCamera camera,hudCam;
+	private OrthographicCamera camera, hudCam;
 
 	// for map
 	private TiledMap tiledMap;
@@ -221,10 +223,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// camera.position.x = posX;
 		// camera.position.y = posY;
 		camera.update();
-		
-		//for HUD camera
-		hudCam = new OrthographicCamera(w,h);
-		
+
+		// for HUD camera
+		hudCam = new OrthographicCamera(w, h);
 
 		sprite.setPosition(posX, posY);
 		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
@@ -235,21 +236,27 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	protected void explodeDestroyedBlocks(Region init) {
 		if (init != null && init.getDestroyedBlocks() != null)
 			for (int i = 0; i < init.getDestroyedBlocks().size(); i++) {
-				explodeCellAt(init.getDestroyedBlocks().get(i).getLeft(), init
-						.getDestroyedBlocks().get(i).getRight());
+				explodeCellAt(null, init.getDestroyedBlocks().get(i).getLeft(),
+						init.getDestroyedBlocks().get(i).getRight());
 			}
 	}
 
 	@Override
 	public void dispose() {
-		// for sprite
-		mediator.leaveGame();
+		die(null);
 		batch.dispose();
 		hudSB.dispose();
 		texture.dispose();
 		textureOfOtherPlayers.dispose();
 		flameTexture.dispose();
 		hudTexture.dispose();
+	}
+
+	private void die(Id killedByPlayer) {
+		mediator.leaveGame(killedByPlayer);
+		if (killedByPlayer != null) {
+			dispose();
+		}
 	}
 
 	@Override
@@ -263,14 +270,16 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		// for camera
 		batch.setProjectionMatrix(camera.combined);
-		//hudSB.setProjectionMatrix(camera.combined);		//do not set projection matrix!
-		//hudCam.position.set(x, y, z)
+		// hudSB.setProjectionMatrix(camera.combined); //do not set projection
+		// matrix!
+		// hudCam.position.set(x, y, z)
 
 		// for map
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
 
-		//hudSB.enableBlending();			//not needed? will try with external transparency
+		// hudSB.enableBlending(); //not needed? will try with external
+		// transparency
 		batch.begin();
 
 		synchronized (mapId) {
@@ -312,10 +321,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 						int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
 								.getY() / moveAmount;
 
-						explodeCellAt(x + 1, y);
-						explodeCellAt(x - 1, y);
-						explodeCellAt(x, y + 1);
-						explodeCellAt(x, y - 1);
+						explodeCellAt(bi, x + 1, y);
+						explodeCellAt(bi, x - 1, y);
+						explodeCellAt(bi, x, y + 1);
+						explodeCellAt(bi, x, y - 1);
 					}
 					flameSprite.setPosition(bi.sprite.getX(), bi.sprite.getY());
 					flameSprite.draw(batch);
@@ -356,23 +365,24 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		batch.end();
-		
-		//start different sprite batch for heads up display
+
+		// start different sprite batch for heads up display
 		hudSB.begin();
 		hudSB.draw(hudTexture, 0, 565);
 		hudFont.setColor(Color.YELLOW);
-		
-		hudFont.draw(hudSB, "Time: "+timer.elapsedTime(), 50, 595);
+
+		// hudFont.draw(hudSB, "Time: " + timer.elapsedTime(), 50, 595);
+		hudFont.draw(hudSB, "Score: " + score, 50, 595);
 		hudSB.end();
 	}
 
-	protected void explodeCellAt(int x, int y) {
+	protected void explodeCellAt(BombInfo bi, int x, int y) {
 		Cell c = collisionLayer.getCell(x, y);
 		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
 			collisionLayer.setCell(x, y, null);
 		}
-		if (posX / moveAmount == x && posY / moveAmount == y) {
-			dispose();
+		if ((bi != null) && (posX / moveAmount == x && posY / moveAmount == y)) {
+			die(bi.player);
 		}
 	}
 
@@ -542,6 +552,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 							p.setSize(32.0f, 64.0f);
 							p.setPosition(player.getX() * moveAmount,
 									player.getY() * moveAmount);
+						} else {
+							score = player.getScore();
 						}
 					}
 

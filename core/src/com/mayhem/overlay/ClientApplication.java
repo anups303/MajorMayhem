@@ -84,14 +84,24 @@ public class ClientApplication implements Application, ScribeClient,
 	}
 
 	public void SendLeaveGameMessage(Id coordinatorHandle) {
-		this.SendLeaveGameMessage(coordinatorHandle, this.node.getId());
+		this.SendLeaveGameMessage(coordinatorHandle, this.node.getId(), null);
 	}
 
-	protected void SendLeaveGameMessage(Id coordinatorHandle, Id sender) {
+	public void SendLeaveGameMessage(Id coordinatorHandle, Id killedByPlayer) {
+		this.SendLeaveGameMessage(coordinatorHandle, this.node.getId(),
+				killedByPlayer);
+	}
+
+	protected void SendLeaveGameMessage(Id coordinatorHandle, Id sender,
+			Id killedByPlayer) {
 		if (this.isCoordinator) {
 			if (this.region.removePlayerById(sender)) {
 				// TODO: Let the neighbor coordinator know the new coordinator
 				if (this.region.players.size() > 0) {
+					
+					if (killedByPlayer != null)
+						this.getRegion().increaseScore(killedByPlayer);
+					
 					Id newCoordinator = this.region.players.get(0).getId();
 					this.routeMessage(newCoordinator,
 							new BecomeRegionControllerMessage(newCoordinator,
@@ -104,7 +114,8 @@ public class ClientApplication implements Application, ScribeClient,
 			}
 
 		} else {
-			LeaveMessage msg = new LeaveMessage(sender, coordinatorHandle);
+			LeaveMessage msg = new LeaveMessage(sender, coordinatorHandle,
+					killedByPlayer);
 			this.routeMessage(coordinatorHandle, msg);
 		}
 	}
