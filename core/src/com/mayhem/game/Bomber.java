@@ -4,6 +4,7 @@ package com.mayhem.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -33,8 +34,8 @@ import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
-
 import com.mayhem.game.Timer;
+
 
 //for randomization
 import java.util.*;
@@ -46,7 +47,7 @@ import rice.environment.Environment;
 import rice.p2p.commonapi.Id;
 
 public class Bomber extends ApplicationAdapter implements InputProcessor,
-		IRegionStateListener {
+		IRegionStateListener, Screen {
 	class BombInfo {
 		Sprite sprite;
 		long timer;
@@ -58,7 +59,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			this.player = player;
 		}
 	}
-
+	
+	final MajorMayhemGame g;
 	private BitmapFont hudFont;
 	private int score;
 	private Timer timer;
@@ -94,9 +96,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private int mapheight, mapwidth;
 	private Integer mapId, newMapId;
 
-	@Override
-	public void create() {
-
+	public Bomber(final MajorMayhemGame game) {
+		this.g = game;
+		
 		// for sprite
 		batch = new SpriteBatch();
 		hudSB = new SpriteBatch();
@@ -108,7 +110,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));
 		hudTexture = new Texture(Gdx.files.internal("hudbg1.png"));
 		textureOfOtherPlayers = new Texture(
-				Gdx.files.internal("Bman_f_f01.png"));
+		Gdx.files.internal("Bman_f_f01.png"));
 		sprite = new Sprite(texture);
 		flameSprite = new Sprite(flameTexture);
 
@@ -126,7 +128,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
 		String bootsrapperIP = System.getenv("IP");
 		if (bootsrapperIP != null && bootsrapperIP.equals(""))
-			bootsrapperIP = null;
+		bootsrapperIP = null;
 		if (coordinator) {
 			mapId = mediator.newGame(this);
 			if (mapId == -1) {
@@ -136,23 +138,20 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		} else {
 			int bootstrapperPort = 9001;
 			if (System.getenv("bootstrapperPort") != null) {
-				bootstrapperPort = Integer.parseInt(System
-						.getenv("bootstrapperPort"));
+				bootstrapperPort = Integer.parseInt(System.getenv("bootstrapperPort"));
 			}
 			int localPort = 9001;
 			if (System.getenv("localPort") != null) {
 				localPort = Integer.parseInt(System.getenv("localPort"));
 			}
-			init = mediator.joinGame(bootsrapperIP, bootstrapperPort, this,
-					localPort);
+			init = mediator.joinGame(bootsrapperIP, bootstrapperPort, this,localPort);
 			if (init == null) {
 				// TODO: Let user know about it!
 				return;
 			} else {
 				mapId = init.getMapId();
 				for (int i = 0; i < init.getPlayers().size(); i++)
-					if (init.getPlayers().get(i).getId() == mediator
-							.GetNodeId()) {
+					if (init.getPlayers().get(i).getId() == mediator.GetNodeId()) {
 						posX = init.getPlayers().get(i).getX() * moveAmount;
 						posY = init.getPlayers().get(i).getY() * moveAmount;
 					}
@@ -195,29 +194,29 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		camera = new OrthographicCamera(w, h);
 		camera.setToOrtho(false);
 		switch ((int) (posX / w)) {
-		case 0:
+			case 0:
 			camera.position.x = 32 * 10;
 			break;
-		case 1:
+			case 1:
 			camera.position.x = 32 * 30;
 			break;
-		case 2:
+			case 2:
 			camera.position.x = 32 * 50;
 			break;
-		default:
+			default:
 			break;
 		}
 		switch ((int) (posY / h)) {
-		case 0:
+			case 0:
 			camera.position.y = 32 * 10;
 			break;
-		case 1:
+			case 1:
 			camera.position.y = 32 * 30;
 			break;
-		case 2:
+			case 2:
 			camera.position.y = 32 * 50;
 			break;
-		default:
+			default:
 			break;
 		}
 		// camera.position.x = posX;
@@ -228,8 +227,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		hudCam = new OrthographicCamera(w, h);
 
 		sprite.setPosition(posX, posY);
-		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
-				/ moveAmount);
+		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)/ moveAmount);
+	}
+	
+	@Override
+	public void create() {
 
 	}
 
@@ -244,7 +246,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	@Override
 	public void dispose() {
 		die(null);
-		batch.dispose();
+		//batch.dispose();
 		hudSB.dispose();
 		texture.dispose();
 		textureOfOtherPlayers.dispose();
@@ -261,119 +263,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public void render() {
-		// for sprite
-		Gdx.gl.glClearColor(1, 1, 1, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		// for input
-		sprite.setPosition(posX, posY);
-
-		// for camera
-		batch.setProjectionMatrix(camera.combined);
-		// hudSB.setProjectionMatrix(camera.combined); //do not set projection
-		// matrix!
-		// hudCam.position.set(x, y, z)
-
-		// for map
-		tiledMapRenderer.setView(camera);
-		tiledMapRenderer.render();
-
-		// hudSB.enableBlending(); //not needed? will try with external
-		// transparency
-		batch.begin();
-
-		synchronized (mapId) {
-			if (mapId != newMapId) {
-				mapId = newMapId;
-				System.out.println("mapid:" + mapId);
-				tiledMap = new TmxMapLoader().load("maps/Map" + mapId + ".tmx");
-				tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-
-				// for collision detection
-				collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get(
-						"Fore");
-				mapheight = collisionLayer.getHeight();
-				mapwidth = collisionLayer.getWidth();
-
-				w = Gdx.graphics.getWidth();
-				h = Gdx.graphics.getHeight();
-			}
-		}
-
-		synchronized (players) {
-
-			Iterator<Id> itr = players.keySet().iterator();
-			while (itr.hasNext())
-				players.get(itr.next()).draw(batch);
-		}
-		sprite.draw(batch);
-
-		if (bombSprite.size() > 0) {
-			List<Long> toBeRemoved = new ArrayList<Long>();
-			Iterator<Long> itr = bombSprite.keySet().iterator();
-			while (itr.hasNext()) {
-				long key = itr.next();
-				BombInfo bi = bombSprite.get(key);
-				if (System.currentTimeMillis() >= bi.timer) {
-					if (bi.sprite == flameSprite) {
-
-						toBeRemoved.add(key);
-						int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
-								.getY() / moveAmount;
-
-						explodeCellAt(bi, x + 1, y);
-						explodeCellAt(bi, x - 1, y);
-						explodeCellAt(bi, x, y + 1);
-						explodeCellAt(bi, x, y - 1);
-					}
-					flameSprite.setPosition(bi.sprite.getX(), bi.sprite.getY());
-					flameSprite.draw(batch);
-
-					bi.sprite = flameSprite;
-
-					bi.timer += BOMB_EXPLOSION_TIME;
-				} else {
-					bi.sprite.draw(batch);
-					if (bi.sprite == flameSprite) {
-						Sprite right = new Sprite(flameTexture);
-						right.setPosition(bi.sprite.getX() + moveAmount,
-								bi.sprite.getY());
-						right.draw(batch);
-
-						Sprite left = new Sprite(flameTexture);
-						left.setPosition(bi.sprite.getX() - moveAmount,
-								bi.sprite.getY());
-						left.draw(batch);
-
-						Sprite down = new Sprite(flameTexture);
-						down.setPosition(bi.sprite.getX(), bi.sprite.getY()
-								+ moveAmount);
-						down.draw(batch);
-
-						Sprite up = new Sprite(flameTexture);
-						up.setPosition(bi.sprite.getX(), bi.sprite.getY()
-								- moveAmount);
-						up.draw(batch);
-					}
-				}
-			}
-			if (toBeRemoved.size() > 0) {
-				for (long id : toBeRemoved) {
-					bombSprite.remove(id);
-				}
-			}
-		}
-
-		batch.end();
-
-		// start different sprite batch for heads up display
-		hudSB.begin();
-		hudSB.draw(hudTexture, 0, 565);
-		hudFont.setColor(Color.YELLOW);
-
-		// hudFont.draw(hudSB, "Time: " + timer.elapsedTime(), 50, 595);
-		hudFont.draw(hudSB, "Score: " + score, 50, 595);
-		hudSB.end();
+		
 	}
 
 	protected void explodeCellAt(BombInfo bi, int x, int y) {
@@ -594,5 +484,126 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		} catch (Exception e) {
 			System.out.println(e);
 		}
+	}
+
+	@Override
+	public void render(float delta) {
+		// for sprite
+		Gdx.gl.glClearColor(1, 1, 1, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		// for input
+		sprite.setPosition(posX, posY);
+
+		// for camera
+		camera.update();
+		g.batch.setProjectionMatrix(camera.combined);
+		// hudSB.setProjectionMatrix(camera.combined); //do not set projection matrix!
+		// hudCam.position.set(x, y, z)
+
+		// for map
+		tiledMapRenderer.setView(camera);
+		tiledMapRenderer.render();
+
+		// hudSB.enableBlending(); //not needed? will try with external
+		// transparency
+		g.batch.begin();
+
+		synchronized (mapId) {
+			if (mapId != newMapId) {
+				mapId = newMapId;
+				System.out.println("mapid:" + mapId);
+				tiledMap = new TmxMapLoader().load("maps/Map" + mapId + ".tmx");
+				tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+
+				// for collision detection
+				collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Fore");
+				mapheight = collisionLayer.getHeight();
+				mapwidth = collisionLayer.getWidth();
+
+				w = Gdx.graphics.getWidth();
+				h = Gdx.graphics.getHeight();
+			}
+		}
+
+		synchronized (players) {
+
+			Iterator<Id> itr = players.keySet().iterator();
+			while (itr.hasNext())
+				players.get(itr.next()).draw(batch);
+		}
+		sprite.draw(batch);
+
+		if (bombSprite.size() > 0) {
+			List<Long> toBeRemoved = new ArrayList<Long>();
+			Iterator<Long> itr = bombSprite.keySet().iterator();
+			while (itr.hasNext()) {
+				long key = itr.next();
+				BombInfo bi = bombSprite.get(key);
+				if (System.currentTimeMillis() >= bi.timer) {
+					if (bi.sprite == flameSprite) {
+						toBeRemoved.add(key);
+						int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
+								.getY() / moveAmount;
+						explodeCellAt(bi, x + 1, y);
+						explodeCellAt(bi, x - 1, y);
+						explodeCellAt(bi, x, y + 1);
+						explodeCellAt(bi, x, y - 1);
+					}
+					flameSprite.setPosition(bi.sprite.getX(), bi.sprite.getY());
+					flameSprite.draw(batch);
+					bi.sprite = flameSprite;
+					bi.timer += BOMB_EXPLOSION_TIME;
+				} else {
+					bi.sprite.draw(batch);
+					if (bi.sprite == flameSprite) {
+						Sprite right = new Sprite(flameTexture);
+						right.setPosition(bi.sprite.getX() + moveAmount,bi.sprite.getY());
+						right.draw(batch);
+
+						Sprite left = new Sprite(flameTexture);
+						left.setPosition(bi.sprite.getX() - moveAmount,bi.sprite.getY());
+						left.draw(batch);
+
+						Sprite down = new Sprite(flameTexture);
+						down.setPosition(bi.sprite.getX(), bi.sprite.getY()	+ moveAmount);
+						down.draw(batch);
+
+						Sprite up = new Sprite(flameTexture);
+						up.setPosition(bi.sprite.getX(), bi.sprite.getY()
+										- moveAmount);
+						up.draw(batch);
+					}
+				}
+			}
+			if (toBeRemoved.size() > 0) {
+				for (long id : toBeRemoved) {
+					bombSprite.remove(id);
+				}
+			}
+		}
+
+		g.batch.end();
+
+		// start different sprite batch for heads up display
+		g.hudSB.begin();
+		g.hudSB.draw(hudTexture, 0, 565);
+		g.hudFont.setColor(Color.YELLOW);
+
+		// hudFont.draw(hudSB, "Time: " + timer.elapsedTime(), 50, 595);
+		g.hudFont.draw(hudSB, "Score: " + score, 50, 595);
+		g.hudSB.end();
+	}
+
+	@Override
+	public void show() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void hide() {
+		// TODO Auto-generated method stub
+		
 	}
 }
