@@ -4,6 +4,7 @@ package com.mayhem.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -46,7 +47,7 @@ import rice.environment.Environment;
 import rice.p2p.commonapi.Id;
 
 public class Bomber extends ApplicationAdapter implements InputProcessor,
-		IRegionStateListener {
+		IRegionStateListener, Screen {
 	class GUIBombState extends BombState {
 		private static final long serialVersionUID = 2798204437146947850L;
 		Sprite sprite;
@@ -60,6 +61,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	}
 
+	final MajorMayhemGame g;
 	private BitmapFont hudFont;
 	private int score;
 	private Timer timer;
@@ -97,8 +99,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private int mapheight, mapwidth;
 	private Integer mapId, newMapId;
 
-	@Override
-	public void create() {
+	public Bomber(final MajorMayhemGame game) {
+		this.g = game;
 
 		// for sprite
 		batch = new SpriteBatch();
@@ -236,6 +238,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	}
 
+	@Override
+	public void create() {
+
+	}
+
 	protected void explodeDestroyedBlocks(Region init) {
 		if (init != null && init.getDestroyedBlocks() != null)
 			for (int i = 0; i < init.getDestroyedBlocks().size(); i++) {
@@ -247,7 +254,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	@Override
 	public void dispose() {
 		mediator.leaveGame(null);
-		batch.dispose();
+		// batch.dispose();
 		hudSB.dispose();
 		texture.dispose();
 		textureOfOtherPlayers.dispose();
@@ -262,6 +269,22 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public void render() {
+
+	}
+
+	protected void explodeCellAt(GUIBombState bi, int x, int y) {
+		Cell c = collisionLayer.getCell(x, y);
+		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
+			collisionLayer.setCell(x, y, null);
+		}
+		if ((bi != null) && (posX / moveAmount == x && posY / moveAmount == y)) {
+			died = true;
+			die(bi.getPlayerId());
+		}
+	}
+
+	@Override
+	public void render(float delta) {
 		// for sprite
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -392,15 +415,16 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		hudSB.end();
 	}
 
-	protected void explodeCellAt(GUIBombState bi, int x, int y) {
-		Cell c = collisionLayer.getCell(x, y);
-		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
-			collisionLayer.setCell(x, y, null);
-		}
-		if ((bi != null) && (posX / moveAmount == x && posY / moveAmount == y)) {
-			died = true;
-			die(bi.getPlayerId());
-		}
+	@Override
+	public void show() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void hide() {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override

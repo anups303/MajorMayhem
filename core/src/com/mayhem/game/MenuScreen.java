@@ -79,6 +79,13 @@ public class MenuScreen implements Screen {
 			}
 		 });
 		 buttonJoin = new TextButton("JOIN GAME", textButtonStyle);
+		 buttonJoin.addListener(new ClickListener() {
+			 @Override
+			public void clicked(InputEvent event, float x, float y) {
+				 ((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g));
+				 dispose();
+			}
+		 });
 		 buttonExit = new TextButton("EXIT", textButtonStyle);
 		 buttonExit.addListener(new ClickListener() {
 			 @Override

@@ -83,7 +83,7 @@ public class BotLauncher {
 										|| (bbs.getX() + 1 == x && bbs.getY() == y)
 										|| (bbs.getX() == x && bbs.getY() == y - 1)
 										|| (bbs.getX() == x && bbs.getY() == y + 1)) {
-									mediator.died(bbs.);
+//									mediator.died(bbs.);
 								}
 								i.remove();
 							}
