@@ -45,7 +45,7 @@ public class BotLauncher {
 		public void run() {
 			Integer mapId;
 			Region init = null;
-			init = mediator.joinGame("130.83.119.55", 9001, this);
+			init = mediator.joinGame("192.168.0.100", 9001, this);
 			if (init != null) {
 				mapId = init.getMapId();
 				for (int i = 0; i < init.getPlayers().size(); i++)
@@ -61,7 +61,6 @@ public class BotLauncher {
 
 			try {
 				while (true) {
-
 					long dX = x + r.nextInt(20) - 10, dY = y + r.nextInt(20)
 							- 10;
 					if (dX < 2)
@@ -78,12 +77,13 @@ public class BotLauncher {
 						Iterator<BotBombState> i = bombs.iterator();
 						while (i.hasNext()) {
 							BotBombState bbs = i.next();
-							if (now - bbs.timer <= 0) {
+							if (now >= bbs.timer ) {
 								if ((bbs.getX() - 1 == x && bbs.getY() == y)
 										|| (bbs.getX() + 1 == x && bbs.getY() == y)
 										|| (bbs.getX() == x && bbs.getY() == y - 1)
 										|| (bbs.getX() == x && bbs.getY() == y + 1)) {
-//									mediator.died(bbs.);
+									mediator.died(bbs.getPlayerId());
+									return;
 								}
 								i.remove();
 							}
