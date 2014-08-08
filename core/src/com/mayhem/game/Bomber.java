@@ -47,16 +47,17 @@ import rice.p2p.commonapi.Id;
 
 public class Bomber extends ApplicationAdapter implements InputProcessor,
 		IRegionStateListener {
-	class BombInfo {
+	class GUIBombState extends BombState {
+		private static final long serialVersionUID = 2798204437146947850L;
 		Sprite sprite;
 		long timer;
-		Id player;
 
-		public BombInfo(Sprite sprite, long timer, Id player) {
+		public GUIBombState(Id playerId, int x, int y, Sprite sprite, long timer) {
+			super(playerId, x, y);
 			this.sprite = sprite;
 			this.timer = timer;
-			this.player = player;
 		}
+
 	}
 
 	private BitmapFont hudFont;
@@ -72,8 +73,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private Texture texture, bombTex, textureOfOtherPlayers, flameTexture,
 			hudTexture;
 	private Sprite sprite, flameSprite;
-	private HashMap<Long, BombInfo> bombSprite;
+	private HashMap<Long, GUIBombState> bombSprite;
 	private HashMap<Id, Sprite> players;
+	private boolean died = false;
+	private long timeToBackToGame;
 
 	// for input
 	private float posX, posY;
@@ -113,7 +116,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		flameSprite = new Sprite(flameTexture);
 
 		bombTex = new Texture(Gdx.files.internal("Bomb_f01.png"));
-		bombSprite = new HashMap<Long, BombInfo>();
+		bombSprite = new HashMap<Long, GUIBombState>();
 
 		sprite.setSize(32.0f, 64.0f);
 
@@ -243,7 +246,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public void dispose() {
-		die(null);
+		mediator.leaveGame(null);
 		batch.dispose();
 		hudSB.dispose();
 		texture.dispose();
@@ -253,10 +256,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	private void die(Id killedByPlayer) {
-		mediator.leaveGame(killedByPlayer);
-		if (killedByPlayer != null) {
-			dispose();
-		}
+		timeToBackToGame = System.currentTimeMillis() + 5000;
+		mediator.died(killedByPlayer);
 	}
 
 	@Override
@@ -300,66 +301,70 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			}
 		}
 
-		synchronized (players) {
+		if (!died) {
 
-			Iterator<Id> itr = players.keySet().iterator();
-			while (itr.hasNext())
-				players.get(itr.next()).draw(batch);
-		}
-		sprite.draw(batch);
+			synchronized (players) {
 
-		if (bombSprite.size() > 0) {
-			List<Long> toBeRemoved = new ArrayList<Long>();
-			Iterator<Long> itr = bombSprite.keySet().iterator();
-			while (itr.hasNext()) {
-				long key = itr.next();
-				BombInfo bi = bombSprite.get(key);
-				if (System.currentTimeMillis() >= bi.timer) {
-					if (bi.sprite == flameSprite) {
+				Iterator<Id> itr = players.keySet().iterator();
+				while (itr.hasNext())
+					players.get(itr.next()).draw(batch);
+			}
+			sprite.draw(batch);
 
-						toBeRemoved.add(key);
-						int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
-								.getY() / moveAmount;
+			if (bombSprite.size() > 0) {
+				List<Long> toBeRemoved = new ArrayList<Long>();
+				Iterator<Long> itr = bombSprite.keySet().iterator();
+				while (itr.hasNext()) {
+					long key = itr.next();
+					GUIBombState bi = bombSprite.get(key);
+					if (System.currentTimeMillis() >= bi.timer) {
+						if (bi.sprite == flameSprite) {
 
-						explodeCellAt(bi, x + 1, y);
-						explodeCellAt(bi, x - 1, y);
-						explodeCellAt(bi, x, y + 1);
-						explodeCellAt(bi, x, y - 1);
-					}
-					flameSprite.setPosition(bi.sprite.getX(), bi.sprite.getY());
-					flameSprite.draw(batch);
+							toBeRemoved.add(key);
+							int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
+									.getY() / moveAmount;
 
-					bi.sprite = flameSprite;
-
-					bi.timer += BOMB_EXPLOSION_TIME;
-				} else {
-					bi.sprite.draw(batch);
-					if (bi.sprite == flameSprite) {
-						Sprite right = new Sprite(flameTexture);
-						right.setPosition(bi.sprite.getX() + moveAmount,
+							explodeCellAt(bi, x + 1, y);
+							explodeCellAt(bi, x - 1, y);
+							explodeCellAt(bi, x, y + 1);
+							explodeCellAt(bi, x, y - 1);
+						}
+						flameSprite.setPosition(bi.sprite.getX(),
 								bi.sprite.getY());
-						right.draw(batch);
+						flameSprite.draw(batch);
 
-						Sprite left = new Sprite(flameTexture);
-						left.setPosition(bi.sprite.getX() - moveAmount,
-								bi.sprite.getY());
-						left.draw(batch);
+						bi.sprite = flameSprite;
 
-						Sprite down = new Sprite(flameTexture);
-						down.setPosition(bi.sprite.getX(), bi.sprite.getY()
-								+ moveAmount);
-						down.draw(batch);
+						bi.timer += BOMB_EXPLOSION_TIME;
+					} else {
+						bi.sprite.draw(batch);
+						if (bi.sprite == flameSprite) {
+							Sprite right = new Sprite(flameTexture);
+							right.setPosition(bi.sprite.getX() + moveAmount,
+									bi.sprite.getY());
+							right.draw(batch);
 
-						Sprite up = new Sprite(flameTexture);
-						up.setPosition(bi.sprite.getX(), bi.sprite.getY()
-								- moveAmount);
-						up.draw(batch);
+							Sprite left = new Sprite(flameTexture);
+							left.setPosition(bi.sprite.getX() - moveAmount,
+									bi.sprite.getY());
+							left.draw(batch);
+
+							Sprite down = new Sprite(flameTexture);
+							down.setPosition(bi.sprite.getX(), bi.sprite.getY()
+									+ moveAmount);
+							down.draw(batch);
+
+							Sprite up = new Sprite(flameTexture);
+							up.setPosition(bi.sprite.getX(), bi.sprite.getY()
+									- moveAmount);
+							up.draw(batch);
+						}
 					}
 				}
-			}
-			if (toBeRemoved.size() > 0) {
-				for (long id : toBeRemoved) {
-					bombSprite.remove(id);
+				if (toBeRemoved.size() > 0) {
+					for (long id : toBeRemoved) {
+						bombSprite.remove(id);
+					}
 				}
 			}
 		}
@@ -372,17 +377,29 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		hudFont.setColor(Color.YELLOW);
 
 		// hudFont.draw(hudSB, "Time: " + timer.elapsedTime(), 50, 595);
-		hudFont.draw(hudSB, "Score: " + score, 50, 595);
+		if (died) {
+			long d = ((timeToBackToGame - System.currentTimeMillis()) / 1000);
+			hudFont.draw(hudSB,
+					"You have been killed. You will be back to game in " + d
+							+ "s", 50, 595);
+			if (d <= 0) {
+				mediator.updatePosition(((int) (posX)) / moveAmount,
+						(int) (posY) / moveAmount);
+				died = false;
+			}
+		} else
+			hudFont.draw(hudSB, "Score: " + score, 50, 595);
 		hudSB.end();
 	}
 
-	protected void explodeCellAt(BombInfo bi, int x, int y) {
+	protected void explodeCellAt(GUIBombState bi, int x, int y) {
 		Cell c = collisionLayer.getCell(x, y);
 		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
 			collisionLayer.setCell(x, y, null);
 		}
 		if ((bi != null) && (posX / moveAmount == x && posY / moveAmount == y)) {
-			die(bi.player);
+			died = true;
+			die(bi.getPlayerId());
 		}
 	}
 
@@ -428,7 +445,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			Iterator<Long> itr = bombSprite.keySet().iterator();
 			while (itr.hasNext()) {
 				long key = itr.next();
-				BombInfo bi = bombSprite.get(key);
+				GUIBombState bi = bombSprite.get(key);
 				if (bi.sprite.getX() == posX + xVar
 						&& bi.sprite.getY() == posY + yVar) {
 					collisionWithBombFlag = true;
@@ -457,36 +474,39 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		if (keycode == Keys.SPACE) {
-			if (mediator.bombPlacement(((int) (posX)) / moveAmount,
-					(int) (posY) / moveAmount)) {
-			}
+			if (allowAddBomb(mediator.GetNodeId()))
+				mediator.bombPlacement(((int) (posX)) / moveAmount,
+						(int) (posY) / moveAmount);
 		}
 		return true;
 	}
 
-	protected void addBomb(float posX, float posY, Id player) {
+	protected boolean allowAddBomb(Id player) {
 		boolean allowBombToAdd = false;
 		if (player == this.mediator.GetNodeId()) {
 			int localBombCounter = 0;
 			Iterator<Long> itr = bombSprite.keySet().iterator();
 			while (itr.hasNext()) {
 				long key = itr.next();
-				BombInfo bi = bombSprite.get(key);
+				GUIBombState bi = bombSprite.get(key);
 				if (bi.sprite != flameSprite
-						&& bi.player == this.mediator.GetNodeId())
+						&& bi.getPlayerId() == this.mediator.GetNodeId())
 					localBombCounter++;
 			}
 			allowBombToAdd = (localBombCounter < MAX_NUMBER_OF_BOMBS);
 		} else
 			allowBombToAdd = true;
-		if (allowBombToAdd) {
+		return allowBombToAdd;
+	}
 
+	protected void addBomb(float posX, float posY, Id player) {
+		if (allowAddBomb(player)) {
 			Sprite bomb = new Sprite(bombTex);
 			bomb.setSize(32, 32);
 			bomb.setPosition(posX, posY);
-			bombSprite.put(new Random().nextLong(),
-					new BombInfo(bomb, System.currentTimeMillis() + 3000,
-							player));
+			bombSprite.put(new Random().nextLong(), new GUIBombState(player,
+					(int) (posX / moveAmount), (int) (posY / moveAmount), bomb,
+					System.currentTimeMillis() + 3000));
 
 		}
 
@@ -541,24 +561,29 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			List<BombState> bombList = region.getBombs();
 			if (playerList != null)
 				synchronized (players) {
+					List<Id> toBeRemoved = new ArrayList<Id>();
+
 					for (PlayerState player : playerList) {
 						if (player.getId() != mediator.GetNodeId()) {
-							// TODO: Render each player in their new position
-							Sprite p = findPlayerById(player.getId());
-							if (p == null) {
-								p = new Sprite(textureOfOtherPlayers);
-								this.players.put(player.getId(), p);
-							}
-							p.setSize(32.0f, 64.0f);
-							p.setPosition(player.getX() * moveAmount,
-									player.getY() * moveAmount);
+							if (player.isAlive()) {
+								// Render each player in their new position
+								Sprite p = findPlayerById(player.getId());
+								if (p == null) {
+									p = new Sprite(textureOfOtherPlayers);
+									this.players.put(player.getId(), p);
+								}
+								p.setSize(32.0f, 64.0f);
+								p.setPosition(player.getX() * moveAmount,
+										player.getY() * moveAmount);
+							} else
+								toBeRemoved.add(player.getId());
 						} else {
 							score = player.getScore();
 						}
 					}
 
 					Iterator<Id> itr = players.keySet().iterator();
-					List<Id> toBeRemoved = new ArrayList<Id>();
+
 					while (itr.hasNext()) {
 						Id key = itr.next();
 						boolean found = false;

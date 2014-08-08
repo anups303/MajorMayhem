@@ -14,12 +14,14 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	@Override
 	public void execute(ClientApplication app) {
-		app.routeMessage(this.getSender(),
-				new ActionAcknowledgmentMessage(this.getSender(), this.getMessageId(),
-						true));
+		app.routeMessage(
+				this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this
+						.getMessageId(), true));
 
 		for (PlayerState player : app.region.getPlayers()) {
 			if (player.getId() == this.getSender()) {
+				player.setAlive(true);
 				boolean leftRegion = (player.getX() / 20) == (this.getX() / 20) + 1;
 				boolean rightRegion = (player.getX() / 20) + 1 == (this.getX() / 20);
 				boolean topRegion = (player.getY() / 20) + 1 == (this.getY() / 20);

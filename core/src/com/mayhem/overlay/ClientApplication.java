@@ -83,6 +83,18 @@ public class ClientApplication implements Application, ScribeClient,
 		return msg.getMessageId();
 	}
 
+	public void SendDieMessage(Id coordinatorHandle, Id killedByPlayer) {
+		if (this.isCoordinator) {
+			DieMessage msg = new DieMessage(this.node.getId(),
+					this.node.getId(), killedByPlayer);
+			msg.execute(this);
+		} else {
+			DieMessage msg = new DieMessage(this.node.getId(),
+					coordinatorHandle, killedByPlayer);
+			this.routeMessage(coordinatorHandle, msg);
+		}
+	}
+
 	public void SendLeaveGameMessage(Id coordinatorHandle) {
 		this.SendLeaveGameMessage(coordinatorHandle, this.node.getId(), null);
 	}
@@ -98,10 +110,10 @@ public class ClientApplication implements Application, ScribeClient,
 			if (this.region.removePlayerById(sender)) {
 				// TODO: Let the neighbor coordinator know the new coordinator
 				if (this.region.players.size() > 0) {
-					
+
 					if (killedByPlayer != null)
 						this.getRegion().increaseScore(killedByPlayer);
-					
+
 					Id newCoordinator = this.region.players.get(0).getId();
 					this.routeMessage(newCoordinator,
 							new BecomeRegionControllerMessage(newCoordinator,
@@ -172,17 +184,6 @@ public class ClientApplication implements Application, ScribeClient,
 	public void update(NodeHandle handle, boolean joined) {
 
 	}
-
-	// if (joined)
-	// // TODO: may be useful to change the way of bootstrapping and
-	// // problem of finding coordinator id
-	// System.out.println("Added to leafset:" + handle);
-	// else {
-	// if (isCoordinator)
-	// this.SendLeaveGameMessage(this.node.getLocalNodeHandle()
-	// .getId(), handle.getId());
-	// }
-	// }
 
 	public void deliver(Topic topic, ScribeContent content) {
 		if (content instanceof RegionStateChannelContent) {

@@ -216,4 +216,8 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	public void leaveGame(Id killedByPlayer) {
 		app.SendLeaveGameMessage(this.app.getRegionController(), killedByPlayer);
 	}
+	
+	public void died(Id killedByPlayer) {
+		app.SendDieMessage(this.app.getRegionController(), killedByPlayer);
+	}
 }

@@ -19,7 +19,7 @@ public class LeaveMessage extends Message {
 				app.getRegion().increaseScore(killedByPlayer);
 			app.getRegion().removePlayerById(this.getSender());
 			System.out.println("Leave:" + this.getSender());
-			app.raiseRegionStateEvent();
+			app.publishRegionState();
 		} catch (Exception ex) {
 
 		}

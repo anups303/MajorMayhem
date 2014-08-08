@@ -101,6 +101,10 @@ public class Mediator {
 	public void leaveGame(Id killedByPlayer) {
 		nodeLauncher.leaveGame(killedByPlayer);
 	}
+	
+	public void died(Id killedByPlayer) {
+		nodeLauncher.died(killedByPlayer);
+	}
 
 	public Id GetNodeId() {
 		return nodeLauncher.GetNodeId();

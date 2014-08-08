@@ -8,6 +8,7 @@ public class PlayerState implements Serializable {
 	private Id id;
 	private long x, y;
 	private int score;
+	private boolean alive;
 
 	public PlayerState(Id id) {
 		this(id, -1, -1);
@@ -22,6 +23,7 @@ public class PlayerState implements Serializable {
 		this.x = x;
 		this.y = y;
 		score = 0;
+		setAlive(true);
 	}
 
 	public void setX(int x) {
@@ -50,5 +52,13 @@ public class PlayerState implements Serializable {
 
 	public void increaseScore() {
 		this.score++;
+	}
+
+	public boolean isAlive() {
+		return alive;
+	}
+
+	public void setAlive(boolean alive) {
+		this.alive = alive;
 	}
 }

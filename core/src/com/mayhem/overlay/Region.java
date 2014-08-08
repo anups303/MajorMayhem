@@ -55,7 +55,7 @@ public class Region implements Serializable {
 		return this.destroyedBlocks;
 	}
 
-	public boolean removePlayerById(Id playerId) {
+	private int indexOf(Id playerId) {
 		int j = -1;
 		for (int i = 0; i < this.players.size(); i++) {
 			if (this.players.get(i).getId() == playerId) {
@@ -63,6 +63,12 @@ public class Region implements Serializable {
 				break;
 			}
 		}
+		return j;
+	}
+
+	public boolean removePlayerById(Id playerId) {
+		int j = indexOf(playerId);
+
 		if (j >= 0) {
 			this.players.remove(j);
 			return true;
@@ -76,6 +82,7 @@ public class Region implements Serializable {
 		this.y = y;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Region clone() {
 		try {
 			Region r = new Region(this.mapId);
@@ -97,13 +104,17 @@ public class Region implements Serializable {
 		return null;
 	}
 
-	public void increaseScore(Id player) {
-		for (int i = 0; i < this.players.size(); i++) {
-			if (this.players.get(i).getId() == player) {
-				this.players.get(i).increaseScore();
-				break;
-			}
-		}
+	public void increaseScore(Id playerId) {
+		int j = indexOf(playerId);
 
+		if (j >= 0)
+			this.players.get(j).increaseScore();
+	}
+
+	public void setAlive(Id playerId, boolean alive) {
+		int j = indexOf(playerId);
+
+		if (j >= 0)
+			this.players.get(j).setAlive(alive);
 	}
 }
