@@ -21,11 +21,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 
@@ -40,8 +42,9 @@ public class MenuScreen implements Screen {
 	private Stage stage;
 	private TextButton buttonNew, buttonJoin, buttonExit;
 	private Table table;
-	private Label heading;
-	private Skin skin;
+	private Label ipLabel, portLabel;
+	private TextField ipField, portField;
+	private Skin skin, skin2;
 	private BitmapFont white, black;
 	private TextureAtlas atlas;
 	
@@ -54,8 +57,13 @@ public class MenuScreen implements Screen {
 		stage = new Stage();
 		atlas = new TextureAtlas("button.pack");		//TODO didn't work with files in ui folder
 		skin = new Skin(atlas);
+		skin2 = new Skin(Gdx.files.internal("uiskin.json"));
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		ipLabel = new Label("IP: ", skin2);
+		portLabel = new Label("Port: ", skin2);
+		ipField = new TextField("", skin2);
+		portField = new TextField("", skin2);
 		white = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
 		black = new BitmapFont(Gdx.files.internal("font/black.fnt"), false);
 		TextButtonStyle textButtonStyle = new TextButtonStyle();
@@ -149,6 +157,12 @@ public class MenuScreen implements Screen {
 //		 table.row();
 		 table.setPosition(0,60);
 		 table.add(buttonNew);
+		 table.add(ipLabel);
+		 table.add(ipField).width(150);
+		 table.row();
+		 table.add();
+		 table.add(portLabel);
+		 table.add(portField).width(100).align(Align.left);
 		 table.row();
 		 table.add(buttonJoin);
 		 table.row();
