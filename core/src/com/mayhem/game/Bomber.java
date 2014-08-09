@@ -99,7 +99,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private int mapheight, mapwidth;
 	private Integer mapId, newMapId;
 
-	public Bomber(final MajorMayhemGame game) {
+	public Bomber(final MajorMayhemGame game, boolean coordinator, String bootstrapperIP, int bootstrapperPort) {
 		this.g = game;
 
 		// for sprite
@@ -128,10 +128,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for overlay configuration
 		mediator = new Mediator();
 		Region init = null;
-		boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
-		String bootsrapperIP = System.getenv("IP");
-		if (bootsrapperIP != null && bootsrapperIP.equals(""))
-			bootsrapperIP = null;
+		//boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
+		//String bootstrapperIP = System.getenv("IP");
+		if (bootstrapperIP != null && bootstrapperIP.equals(""))
+			bootstrapperIP = null;
 		if (coordinator) {
 			mapId = mediator.newGame(this);
 			if (mapId == -1) {
@@ -139,16 +139,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			}
 			posX = posY = 1 * moveAmount;
 		} else {
-			int bootstrapperPort = 9001;
-			if (System.getenv("bootstrapperPort") != null) {
-				bootstrapperPort = Integer.parseInt(System
-						.getenv("bootstrapperPort"));
-			}
+			//int bootstrapperPort = 9001;
+//			if (System.getenv("bootstrapperPort") != null) {
+//				bootstrapperPort = Integer.parseInt(System.getenv("bootstrapperPort"));
+//			}
 			int localPort = 9001;
 			if (System.getenv("localPort") != null) {
 				localPort = Integer.parseInt(System.getenv("localPort"));
 			}
-			init = mediator.joinGame(bootsrapperIP, bootstrapperPort, this,
+			init = mediator.joinGame(bootstrapperIP, bootstrapperPort, this,
 					localPort);
 			if (init == null) {
 				// TODO: Let user know about it!
@@ -501,6 +500,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			if (allowAddBomb(mediator.GetNodeId()))
 				mediator.bombPlacement(((int) (posX)) / moveAmount,
 						(int) (posY) / moveAmount);
+		}
+		
+		if(keycode == Keys.TAB) {
+			
 		}
 		return true;
 	}

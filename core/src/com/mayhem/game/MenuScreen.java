@@ -76,24 +76,19 @@ public class MenuScreen implements Screen {
 		buttonNew.addListener(new ClickListener() {
 			 @Override
 			public void clicked(InputEvent event, float x, float y) {
-//				 stage.addAction(sequence(moveTo(0, stage.getHeight(), .5f), run(new Runnable() {
-//					 @Override
-//					 public void run() {
-//						 ((Game) Gdx.app.getApplicationListener()).setScreen(new Bomber());
-//					 }
-//				 })));
-				 ((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g));
+				 ((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, true, null, 0));
 				 dispose();
 			}
 		 });
 		 buttonJoin = new TextButton("JOIN GAME", textButtonStyle);
 		 buttonJoin.addListener(new ClickListener() {
 			 @Override
-			public void clicked(InputEvent event, float x, float y) {
-				 ((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g));
+			 public void clicked(InputEvent event, float x, float y) {
+				 ((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, false, ipField.getText(), Integer.parseInt(portField.getText())));
 				 dispose();
-			}
+			 }
 		 });
+		 buttonJoin.setVisible(false);
 		 buttonExit = new TextButton("EXIT", textButtonStyle);
 		 buttonExit.addListener(new ClickListener() {
 			 @Override
@@ -119,6 +114,11 @@ public class MenuScreen implements Screen {
 		stage.act(delta);
 		stage.draw();
 		
+		if(ipField.getText().isEmpty()||portField.getText().isEmpty())
+			buttonJoin.setVisible(false);
+		else if(!(ipField.getText().isEmpty())&&!(portField.getText().isEmpty()))
+			buttonJoin.setVisible(true);
+				
 //		if(Gdx.input.isTouched()) {
 //			g.setScreen(new Bomber(g));
 //			dispose();
@@ -145,8 +145,8 @@ public class MenuScreen implements Screen {
 		 buttonNew.pad(20);
 		 buttonJoin.pad(20);
 		 buttonExit.pad(20);
-		 buttonExit.padLeft(48);
-		 buttonExit.padRight(48);
+		 buttonExit.padLeft(57);
+		 buttonExit.padRight(57);
 		 //buttonExit.setSize(buttonJoin.getWidth(), buttonJoin.getHeight());
 		 
 		 //removing heading since splash already has name
@@ -157,14 +157,14 @@ public class MenuScreen implements Screen {
 //		 table.row();
 		 table.setPosition(0,60);
 		 table.add(buttonNew);
+		 table.row();
+		 table.add(buttonJoin);
 		 table.add(ipLabel);
 		 table.add(ipField).width(150);
 		 table.row();
 		 table.add();
 		 table.add(portLabel);
 		 table.add(portField).width(100).align(Align.left);
-		 table.row();
-		 table.add(buttonJoin);
 		 table.row();
 		 table.add(buttonExit);
 		 //table.debug();		//TODO remove later
