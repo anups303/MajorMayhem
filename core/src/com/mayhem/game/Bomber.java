@@ -103,10 +103,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private String bootstrapperIP;
 	private int bootstrapperPort;
 
-	public Bomber(final MajorMayhemGame game, boolean coordinator, String bootstrapperIP, int bootstrapperPort) {
+	public Bomber(final MajorMayhemGame game, boolean coordinator, String bootstrapperIP, int bootstrapperPort, int score) {
 		this.g = game;
 		this.bootstrapperIP = bootstrapperIP;
 		this.bootstrapperPort = bootstrapperPort;
+		this.score = score;
 
 		// for sprite
 		batch = new SpriteBatch();

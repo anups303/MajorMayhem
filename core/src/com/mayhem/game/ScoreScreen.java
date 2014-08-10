@@ -44,7 +44,7 @@ public class ScoreScreen implements InputProcessor, Screen {
 		batch.end();
 		
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
-			((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, false, ip, port));
+			((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, false, ip, port, score));
 			dispose();
 		}
 	}
