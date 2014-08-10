@@ -2,8 +2,9 @@ package com.mayhem.game;
 
 //for sprite
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+//import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -18,7 +19,7 @@ import com.badlogic.gdx.InputProcessor;
 
 //for camera
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.maps.MapObjects;
+//import com.badlogic.gdx.maps.MapObjects;
 //for map
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -28,22 +29,22 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 //for collision detection
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
-import com.badlogic.gdx.physics.bullet.linearmath.int4;
+//import com.badlogic.gdx.physics.bullet.linearmath.int4;
 import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
-
 import com.mayhem.game.Timer;
+
 
 //for randomization
 import java.util.*;
 
 //for debug
-import javax.swing.JOptionPane;
+//import javax.swing.JOptionPane;
 
-import rice.environment.Environment;
+//import rice.environment.Environment;
 import rice.p2p.commonapi.Id;
 
 public class Bomber extends ApplicationAdapter implements InputProcessor,
@@ -84,7 +85,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private float posX, posY;
 
 	// for camera
-	private OrthographicCamera camera, hudCam;
+	private OrthographicCamera camera;
 
 	// for map
 	private TiledMap tiledMap;
@@ -98,9 +99,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private TiledMapTileLayer collisionLayer;
 	private int mapheight, mapwidth;
 	private Integer mapId, newMapId;
+	
+	private String bootstrapperIP;
+	private int bootstrapperPort;
 
 	public Bomber(final MajorMayhemGame game, boolean coordinator, String bootstrapperIP, int bootstrapperPort) {
 		this.g = game;
+		this.bootstrapperIP = bootstrapperIP;
+		this.bootstrapperPort = bootstrapperPort;
 
 		// for sprite
 		batch = new SpriteBatch();
@@ -228,8 +234,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// camera.position.y = posY;
 		camera.update();
 
-		// for HUD camera
-		hudCam = new OrthographicCamera(w, h);
+		new OrthographicCamera(w, h);
 
 		sprite.setPosition(posX, posY);
 		mediator.updatePosition(((int) (posX)) / moveAmount, (int) (posY)
@@ -503,7 +508,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 		
 		if(keycode == Keys.TAB) {
-			
+			((Game)Gdx.app.getApplicationListener()).setScreen(new ScoreScreen(g, score, bootstrapperIP, bootstrapperPort));
+			dispose();
 		}
 		return true;
 	}

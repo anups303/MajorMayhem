@@ -76,7 +76,10 @@ public class MenuScreen implements Screen {
 		buttonNew.addListener(new ClickListener() {
 			 @Override
 			public void clicked(InputEvent event, float x, float y) {
+				 //TODO change this back!!
 				 ((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, true, null, 0));
+				 //int score=50;
+				 //((Game)Gdx.app.getApplicationListener()).setScreen(new ScoreScreen(g, score));
 				 dispose();
 			}
 		 });
@@ -88,7 +91,6 @@ public class MenuScreen implements Screen {
 				 dispose();
 			 }
 		 });
-		 buttonJoin.setVisible(false);
 		 buttonExit = new TextButton("EXIT", textButtonStyle);
 		 buttonExit.addListener(new ClickListener() {
 			 @Override
