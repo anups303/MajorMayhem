@@ -56,6 +56,9 @@ public class BecomeRegionControllerMessage extends Message {
 									r, r.x, r.y));
 
 		}
+		Id regionId = app.region.RegionId();
+		app.routeMessage(regionId, new RegionControllerChangedMessage(null,
+				null, regionId, app.getLocalNodeId()));
 
 		app.leftCoordinator = this.getLeftCoordinator();
 		if (app.leftCoordinator != null)

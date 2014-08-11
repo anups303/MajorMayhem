@@ -117,4 +117,23 @@ public class Region implements Serializable {
 		if (j >= 0)
 			this.players.get(j).setAlive(alive);
 	}
+
+	public Id RegionId() {
+		return Region.RegionId(this.x, this.y);
+	}
+
+	public static Id RegionId(long x, long y) {
+		String threeZeroes = "000";
+		String strX = Long.toHexString(x / 20), strY = Long.toHexString(y / 20);
+		if (strX.length() > 3)
+			strX = strX.substring(0, 3);
+		else
+			strX = threeZeroes.substring(0, 3 - strX.length()) + strX;
+		if (strY.length() > 3)
+			strY = strY.substring(0, 3);
+		else
+			strY = threeZeroes.substring(0, 3 - strY.length()) + strY;
+
+		return rice.pastry.Id.build(strX + strY);
+	}
 }

@@ -35,6 +35,11 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 					if (leftRegion) {
 						Id coordinator = app.leftCoordinator;
+
+						if (coordinator == null) {
+							coordinator = app.FindRegionController(x, y);
+						}
+
 						long x = app.region.x - (20 + 1), y = app.region.y;
 						app.leftCoordinator = doTheJob(app, coordinator, x, y,
 								null, app.node.getId(), null, null);
@@ -42,7 +47,13 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 					if (rightRegion) {
 						Id coordinator = app.rightCoordinator;
+						
 						long x = app.region.x + (20 + 1), y = app.region.y;
+						
+						if (coordinator == null) {
+							coordinator = app.FindRegionController(x, y);
+						}
+						
 						app.rightCoordinator = doTheJob(app, coordinator, x, y,
 								app.node.getId(), null, null, null);
 					}
@@ -50,12 +61,14 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 					if (topRegion) {
 						Id coordinator = app.topCoordinator;
 						long x = app.region.x, y = app.region.y + (20 + 1);
+
 						app.topCoordinator = doTheJob(app, coordinator, x, y,
 								null, null, null, app.node.getId());
 					}
 					if (bottomRegion) {
 						Id coordinator = app.bottomCoordinator;
 						long x = app.region.x, y = app.region.y - (20 + 1);
+
 						app.bottomCoordinator = doTheJob(app, coordinator, x,
 								y, null, null, app.node.getId(), null);
 					}
@@ -77,6 +90,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 			Id bottomCoordinator) {
 		Id result = coordinator;
 
+		// There is no known RC for the new region
 		if (coordinator == null) {
 
 			// If I'm the region controller and I'm moving to
@@ -86,6 +100,25 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 				// I'm the only one in the region and I'm moving
 				// to an empty region
 				if (app.region.players.size() == 0) {
+					if (app.leftCoordinator != null)
+						app.routeMessage(app.leftCoordinator,
+								new NeighborCoordinatorChangedMessage(
+										app.leftCoordinator, null, 1));
+					if (app.rightCoordinator != null)
+						app.routeMessage(app.rightCoordinator,
+								new NeighborCoordinatorChangedMessage(
+										app.rightCoordinator, null, 0));
+					if (app.topCoordinator != null)
+						app.routeMessage(app.topCoordinator,
+								new NeighborCoordinatorChangedMessage(
+										app.topCoordinator, null, 3));
+
+					if (app.bottomCoordinator != null)
+						app.routeMessage(app.bottomCoordinator,
+								new NeighborCoordinatorChangedMessage(
+										app.bottomCoordinator, null, 2));
+
+					// I will become RC of the empty region
 					app.routeMessage(this.getSender(),
 							new BecomeRegionControllerMessage(this.getSender(),
 									null, null, null, null, this.x, this.y, x,
@@ -177,6 +210,12 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 									app.leftCoordinator, app.rightCoordinator,
 									app.topCoordinator, app.bottomCoordinator,
 									0, 0, 0, 0, app.region));
+				} else {
+					//TODO: Neighbors should be inform about this movement
+					Id regionId = app.region.RegionId();
+					app.routeMessage(regionId,
+							new RegionControllerChangedMessage(null, null,
+									regionId, null));
 				}
 			}
 			app.routeMessage(coordinator,

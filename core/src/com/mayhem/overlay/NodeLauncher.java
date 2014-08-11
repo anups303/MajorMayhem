@@ -155,8 +155,14 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 						if (msgId == itr.next()) {
 							long stopTime = System.currentTimeMillis();
 							long elapsedTime = stopTime - startTime;
-//							System.out.println("MSG#" + msgId + ": "
-//									+ elapsedTime + "ms");
+							// System.out.println("MSG#" + msgId + ": "
+							// + elapsedTime + "ms");
+							Object result = recievedAcks.get(msgId);
+							// System.out.println((Boolean) result);
+							if (result instanceof Boolean) {
+								return (Boolean) result;
+							}
+
 							return true;
 						}
 				}
@@ -182,12 +188,16 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		try {
 			synchronized (lock) {
 				// We will wait until the ACK receives
+				int c = 0;
 				while (true) {
-					lock.wait();
+					lock.wait(500);
 					Iterator<Long> itr = recievedAcks.keySet().iterator();
 					while (itr.hasNext())
 						if (msgId == itr.next())
 							return true;
+
+					if (c++ > 4)
+						return false;
 				}
 			}
 
@@ -212,11 +222,11 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	public void leaveGame() {
 		app.SendLeaveGameMessage(this.app.getRegionController());
 	}
-	
+
 	public void leaveGame(Id killedByPlayer) {
 		app.SendLeaveGameMessage(this.app.getRegionController(), killedByPlayer);
 	}
-	
+
 	public void died(Id killedByPlayer) {
 		app.SendDieMessage(this.app.getRegionController(), killedByPlayer);
 	}

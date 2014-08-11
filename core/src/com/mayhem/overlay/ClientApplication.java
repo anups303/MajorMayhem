@@ -17,19 +17,27 @@ import rice.p2p.scribe.ScribeClient;
 import rice.p2p.scribe.ScribeContent;
 import rice.p2p.scribe.ScribeImpl;
 import rice.p2p.scribe.Topic;
+import rice.pastry.PastryNode;
 import rice.pastry.commonapi.PastryIdFactory;
+import rice.pastry.leafset.LeafSet;
 
 public class ClientApplication implements Application, ScribeClient,
 		DeliveryNotification {
+
+	private final Object lock = new Object();
+	protected HashSet<Long> messageId;
+	protected Map<Long, Id> recievedAcks;
+
 	protected List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
 	protected List<IRegionStateListener> regionStateListeners = new ArrayList<IRegionStateListener>();
+	protected HashMap<Id, Id> coordinatorList = new HashMap<Id, Id>();
 
 	protected Id regionController;
 	protected Id rightCoordinator, leftCoordinator, topCoordinator,
 			bottomCoordinator;
 
 	protected boolean isCoordinator;
-	protected Node node;
+	protected PastryNode node;
 	protected CancellableTask publishTask;
 	protected Scribe scribe;
 	protected Topic topic;
@@ -37,7 +45,10 @@ public class ClientApplication implements Application, ScribeClient,
 	protected Endpoint endpoint;
 	protected Region region;
 
-	public ClientApplication(Node node, boolean isNewGame) {
+	public ClientApplication(PastryNode node, boolean isNewGame) {
+		messageId = new HashSet<Long>();
+		recievedAcks = new HashMap<Long, Id>();
+
 		this.isCoordinator = isNewGame;
 		this.node = node;
 		this.endpoint = node.buildEndpoint(this, "instance");
@@ -146,14 +157,40 @@ public class ClientApplication implements Application, ScribeClient,
 	}
 
 	public void deliver(Id id, Message message) {
+
+		if (this.getLocalNodeId() != id)
+			System.out
+					.println(this.getLocalNodeId() + ":" + id + "-" + message);
 		if (message instanceof com.mayhem.overlay.Message) {
+
 			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
-			// We have received a message which doesn't belong to us!
-			if (this.getLocalNodeId() != msg.getReceiver()) {
-				System.out
-						.println(this.getLocalNodeId() + "received" + message);
+			if (messageId.add(msg.getMessageId())) {
+
+				class OneShotTask implements Runnable {
+					com.mayhem.overlay.Message msg;
+					ClientApplication app;
+
+					OneShotTask(com.mayhem.overlay.Message msg,
+							ClientApplication app) {
+						this.msg = msg;
+						this.app = app;
+					}
+
+					public void run() {
+						msg.execute(app);
+					}
+				}
+
+				Thread t = new Thread(new OneShotTask(msg, this));
+				t.start();
 			}
-			msg.execute(this);
+
+			// We have received a message which doesn't belong to us!
+			// if (this.getLocalNodeId() != msg.getReceiver()) {
+			// System.out
+			// .println(this.getLocalNodeId() + "received" + message);
+			// }
+
 		}
 	}
 
@@ -318,10 +355,18 @@ public class ClientApplication implements Application, ScribeClient,
 			if (arg0.getMessage() instanceof com.mayhem.overlay.Message) {
 				com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) arg0
 						.getMessage();
-				System.out.println("failed to send:" + msg);
+				System.out.println("failed to send:" + msg + "-Latency:"
+						+ (System.currentTimeMillis() - msg.getSentTime())
+						/ 1000 + "s");
+
+				this.routeMessage(
+						msg.getSender(),
+						new ActionAcknowledgmentMessage(msg.getSender(), msg
+								.getMessageId(), false));
 
 				if (this.region.players.size() > 1) {
 					PlayerState newCoordinator = this.region.players.get(1);
+					this.region.players.remove(0);
 
 					endpoint.route(
 							newCoordinator.getId(),
@@ -344,4 +389,44 @@ public class ClientApplication implements Application, ScribeClient,
 	public void sent(MessageReceipt arg0) {
 		// System.out.println(arg0);
 	}
+
+	public void regionControllerLookupReplyReceived(long messageId,
+			Id coordinator) {
+		synchronized (lock) {
+			recievedAcks.put(messageId, coordinator);
+			lock.notifyAll();
+		}
+	}
+
+	protected Id FindRegionController(long x, long y) {
+		Id regionId = Region.RegionId(x, y);
+		RegionControllerLookup msg = new RegionControllerLookup(
+				this.getLocalNodeId(), null, regionId);
+		long msgId = msg.getMessageId();
+		System.out.println(Thread.currentThread().getId());
+		this.routeMessage(regionId, msg);
+		try {
+			int c = 0;
+			// We will wait until the ACK receives
+			while (true) {
+				c++;
+				synchronized (lock) {
+					Iterator<Long> itr = recievedAcks.keySet().iterator();
+					while (itr.hasNext())
+						if (msgId == itr.next()) {
+							return recievedAcks.get(msgId);
+						}
+					lock.wait(500);
+				}
+				// return null after 5 sec
+				if (c > 10)
+					return null;
+			}
+		} catch (Exception ex) {
+			System.out.println(ex);
+			// return false;
+		}
+		return null;
+	}
+
 }
