@@ -14,13 +14,11 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	@Override
 	public void execute(ClientApplication app) {
-		app.routeMessage(
-				this.getSender(),
-				new ActionAcknowledgmentMessage(this.getSender(), this
-						.getMessageId(), true));
-
+		boolean find = false;
 		for (PlayerState player : app.region.getPlayers()) {
+			// If the sender is a member of my region
 			if (player.getId() == this.getSender()) {
+				find = true;
 				player.setAlive(true);
 				boolean leftRegion = (player.getX() / 20) == (this.getX() / 20) + 1;
 				boolean rightRegion = (player.getX() / 20) + 1 == (this.getX() / 20);
@@ -35,25 +33,22 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 					if (leftRegion) {
 						Id coordinator = app.leftCoordinator;
+						long x = app.region.x - (20 + 1), y = app.region.y;
 
 						if (coordinator == null) {
 							coordinator = app.FindRegionController(x, y);
 						}
-
-						long x = app.region.x - (20 + 1), y = app.region.y;
 						app.leftCoordinator = doTheJob(app, coordinator, x, y,
 								null, app.node.getId(), null, null);
 					}
 
 					if (rightRegion) {
 						Id coordinator = app.rightCoordinator;
-						
 						long x = app.region.x + (20 + 1), y = app.region.y;
-						
+
 						if (coordinator == null) {
 							coordinator = app.FindRegionController(x, y);
 						}
-						
 						app.rightCoordinator = doTheJob(app, coordinator, x, y,
 								app.node.getId(), null, null, null);
 					}
@@ -62,12 +57,20 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 						Id coordinator = app.topCoordinator;
 						long x = app.region.x, y = app.region.y + (20 + 1);
 
+						if (coordinator == null) {
+							coordinator = app.FindRegionController(x, y);
+						}
+
 						app.topCoordinator = doTheJob(app, coordinator, x, y,
 								null, null, null, app.node.getId());
 					}
 					if (bottomRegion) {
 						Id coordinator = app.bottomCoordinator;
 						long x = app.region.x, y = app.region.y - (20 + 1);
+
+						if (coordinator == null) {
+							coordinator = app.FindRegionController(x, y);
+						}
 
 						app.bottomCoordinator = doTheJob(app, coordinator, x,
 								y, null, null, app.node.getId(), null);
@@ -81,8 +84,14 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 				}
 			}
 		}
-		// Then Coordinator has to propagate new game state on the channel
-		app.publishRegionState();
+		if (find)
+			// Then Coordinator has to propagate new game state on the
+			// channel
+			app.publishRegionState();
+		app.routeMessage(
+				this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this
+						.getMessageId(), find));
 	}
 
 	protected Id doTheJob(ClientApplication app, Id coordinator, long x,
@@ -211,7 +220,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 									app.topCoordinator, app.bottomCoordinator,
 									0, 0, 0, 0, app.region));
 				} else {
-					//TODO: Neighbors should be inform about this movement
+					// TODO: Neighbors should be inform about this movement
 					Id regionId = app.region.RegionId();
 					app.routeMessage(regionId,
 							new RegionControllerChangedMessage(null, null,

@@ -7,6 +7,7 @@ public class Message implements rice.p2p.commonapi.Message {
 	private long messageId;
 	private long sentTime;
 	private Id receiver, sender;
+	private int ttl = 3;
 
 	public Message(Id sender, Id receiver) {
 		messageId = new java.util.Random().nextLong();
@@ -37,6 +38,14 @@ public class Message implements rice.p2p.commonapi.Message {
 
 	public long getSentTime() {
 		return this.sentTime;
+	}
+
+	public void decreaseTTL() {
+		ttl--;
+	}
+
+	public int getTTL() {
+		return ttl;
 	}
 
 	@Override

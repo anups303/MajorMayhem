@@ -88,8 +88,7 @@ public class BecomeRegionControllerMessage extends Message {
 				+ "[" + app.leftCoordinator + "," + app.rightCoordinator + ","
 				+ app.topCoordinator + "," + app.bottomCoordinator + "]");
 
-		app.publishRegionState();
-
+		app.raiseRegionStateEvent();
 	}
 
 	public Id getRightCoordinator() {

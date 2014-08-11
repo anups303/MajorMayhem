@@ -162,10 +162,9 @@ public class ClientApplication implements Application, ScribeClient,
 			System.out
 					.println(this.getLocalNodeId() + ":" + id + "-" + message);
 		if (message instanceof com.mayhem.overlay.Message) {
-
 			com.mayhem.overlay.Message msg = (com.mayhem.overlay.Message) message;
-			if (messageId.add(msg.getMessageId())) {
-
+			if (msg.getTTL() > 0 && messageId.add(msg.getMessageId())) {
+				msg.decreaseTTL();
 				class OneShotTask implements Runnable {
 					com.mayhem.overlay.Message msg;
 					ClientApplication app;
@@ -418,8 +417,8 @@ public class ClientApplication implements Application, ScribeClient,
 						}
 					lock.wait(500);
 				}
-				// return null after 5 sec
-				if (c > 10)
+				// return null after 2 sec
+				if (c > 4)
 					return null;
 			}
 		} catch (Exception ex) {
