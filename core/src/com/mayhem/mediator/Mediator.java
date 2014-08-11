@@ -109,4 +109,8 @@ public class Mediator {
 	public Id GetNodeId() {
 		return nodeLauncher.GetNodeId();
 	}
+	
+	public Region getRegionState(){
+		return nodeLauncher.getApplication().getRegion();
+	}
 }

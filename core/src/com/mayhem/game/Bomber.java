@@ -41,9 +41,6 @@ import com.mayhem.game.Timer;
 //for randomization
 import java.util.*;
 
-//for debug
-//import javax.swing.JOptionPane;
-
 //import rice.environment.Environment;
 import rice.p2p.commonapi.Id;
 
@@ -99,15 +96,23 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private TiledMapTileLayer collisionLayer;
 	private int mapheight, mapwidth;
 	private Integer mapId, newMapId;
-	
+
 	private String bootstrapperIP;
 	private int bootstrapperPort;
 
-	public Bomber(final MajorMayhemGame game, boolean coordinator, String bootstrapperIP, int bootstrapperPort, int score) {
+	public Bomber(final MajorMayhemGame game, boolean coordinator,
+			String bootstrapperIP, int bootstrapperPort, int score,
+			Mediator mediator1) {
 		this.g = game;
 		this.bootstrapperIP = bootstrapperIP;
 		this.bootstrapperPort = bootstrapperPort;
 		this.score = score;
+		boolean flag = true;
+		if (mediator1 != null) {
+			this.mediator = mediator1;
+			flag = false;
+		} else
+			this.mediator = new Mediator();
 
 		// for sprite
 		batch = new SpriteBatch();
@@ -133,29 +138,48 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		players = new HashMap<Id, Sprite>();
 
 		// for overlay configuration
-		mediator = new Mediator();
+		// mediator = new Mediator();
 		Region init = null;
-		//boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
-		//String bootstrapperIP = System.getenv("IP");
+		// boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
+		// String bootstrapperIP = System.getenv("IP");
+
 		if (bootstrapperIP != null && bootstrapperIP.equals(""))
 			bootstrapperIP = null;
-		if (coordinator) {
-			mapId = mediator.newGame(this);
-			if (mapId == -1) {
-				// TODO: Let user know about it!
+		if (flag){
+			if (coordinator) {
+				mapId = mediator.newGame(this);
+				if (mapId == -1) {
+					// TODO: Let user know about it!
+				}
+				posX = posY = 1 * moveAmount;
+			} else {
+				// int bootstrapperPort = 9001;
+				// if (System.getenv("bootstrapperPort") != null) {
+				// bootstrapperPort =
+				// Integer.parseInt(System.getenv("bootstrapperPort"));
+				// }
+				int localPort = 9001;
+				if (System.getenv("localPort") != null) {
+					localPort = Integer.parseInt(System.getenv("localPort"));
+				}
+				init = mediator.joinGame(bootstrapperIP, bootstrapperPort,
+						this, localPort);
+				if (init == null) {
+					// TODO: Let user know about it!
+					return;
+				} else {
+					mapId = init.getMapId();
+					for (int i = 0; i < init.getPlayers().size(); i++)
+						if (init.getPlayers().get(i).getId() == mediator
+								.GetNodeId()) {
+							posX = init.getPlayers().get(i).getX() * moveAmount;
+							posY = init.getPlayers().get(i).getY() * moveAmount;
+						}
+				}
 			}
-			posX = posY = 1 * moveAmount;
-		} else {
-			//int bootstrapperPort = 9001;
-//			if (System.getenv("bootstrapperPort") != null) {
-//				bootstrapperPort = Integer.parseInt(System.getenv("bootstrapperPort"));
-//			}
-			int localPort = 9001;
-			if (System.getenv("localPort") != null) {
-				localPort = Integer.parseInt(System.getenv("localPort"));
-			}
-			init = mediator.joinGame(bootstrapperIP, bootstrapperPort, this,
-					localPort);
+		}
+		else{
+			init= mediator.getRegionState();
 			if (init == null) {
 				// TODO: Let user know about it!
 				return;
@@ -507,10 +531,14 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				mediator.bombPlacement(((int) (posX)) / moveAmount,
 						(int) (posY) / moveAmount);
 		}
-		
-		if(keycode == Keys.TAB) {
-			((Game)Gdx.app.getApplicationListener()).setScreen(new ScoreScreen(g, score, bootstrapperIP, bootstrapperPort));
-			dispose();
+
+		if (keycode == Keys.TAB) {
+			((Game)Gdx.app.getApplicationListener()).setScreen(new ScoreScreen(g, score, bootstrapperIP, bootstrapperPort, mediator));
+			hudSB.dispose();
+			texture.dispose();
+			textureOfOtherPlayers.dispose();
+			flameTexture.dispose();
+			hudTexture.dispose();
 		}
 		return true;
 	}

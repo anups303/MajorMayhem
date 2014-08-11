@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mayhem.mediator.Mediator;
 
 public class ScoreScreen implements InputProcessor, Screen {
 	
@@ -17,14 +18,16 @@ public class ScoreScreen implements InputProcessor, Screen {
 	private BitmapFont font;
 	private int score, port;
 	private String ip;
+	private Mediator mediator;
 	
-	public ScoreScreen(final MajorMayhemGame game, int score, String ip, int port) {
+	public ScoreScreen(final MajorMayhemGame game, int score, String ip, int port, Mediator mediator) {
 		this.g = game;
 		this.score = score;
 		batch = new SpriteBatch();
 		font = new BitmapFont();
 		this.port = port;
 		this.ip = ip;
+		this.mediator = mediator;
 	}
 
 	@Override
@@ -44,7 +47,7 @@ public class ScoreScreen implements InputProcessor, Screen {
 		batch.end();
 		
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
-			((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, false, ip, port, score));
+			((Game)Gdx.app.getApplicationListener()).setScreen(new Bomber(g, false, ip, port, score, mediator));
 			dispose();
 		}
 	}
