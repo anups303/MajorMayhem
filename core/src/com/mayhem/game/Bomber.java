@@ -37,7 +37,6 @@ import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
 import com.mayhem.game.Timer;
 
-
 //for randomization
 import java.util.*;
 
@@ -145,7 +144,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		if (bootstrapperIP != null && bootstrapperIP.equals(""))
 			bootstrapperIP = null;
-		if (flag){
+		if (flag) {
 			if (coordinator) {
 				mapId = mediator.newGame(this);
 				if (mapId == -1) {
@@ -177,9 +176,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 						}
 				}
 			}
-		}
-		else{
-			init= mediator.getRegionState();
+		} else {
+			init = mediator.getRegionState();
 			if (init == null) {
 				// TODO: Let user know about it!
 				return;
@@ -376,6 +374,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 							int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
 									.getY() / moveAmount;
 
+							explodeCellAt(bi, x, y);
 							explodeCellAt(bi, x + 1, y);
 							explodeCellAt(bi, x - 1, y);
 							explodeCellAt(bi, x, y + 1);
@@ -533,7 +532,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		if (keycode == Keys.TAB) {
-			((Game)Gdx.app.getApplicationListener()).setScreen(new ScoreScreen(g, score, bootstrapperIP, bootstrapperPort, mediator));
+			((Game) Gdx.app.getApplicationListener())
+					.setScreen(new ScoreScreen(g, score, bootstrapperIP,
+							bootstrapperPort, mediator));
 			hudSB.dispose();
 			texture.dispose();
 			textureOfOtherPlayers.dispose();

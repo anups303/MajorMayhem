@@ -418,7 +418,7 @@ public class ClientApplication implements Application, ScribeClient,
 					lock.wait(500);
 				}
 				// return null after 2 sec
-				if (c > 4)
+				if (c > 0)
 					return null;
 			}
 		} catch (Exception ex) {
