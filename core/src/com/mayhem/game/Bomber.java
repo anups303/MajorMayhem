@@ -227,32 +227,37 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		// for camera
 		camera = new OrthographicCamera(w, h);
 		camera.setToOrtho(false);
-		switch ((int) (posX / w)) {
-		case 0:
-			camera.position.x = 32 * 10;
-			break;
-		case 1:
-			camera.position.x = 32 * 30;
-			break;
-		case 2:
-			camera.position.x = 32 * 50;
-			break;
-		default:
-			break;
-		}
-		switch ((int) (posY / h)) {
-		case 0:
-			camera.position.y = 32 * 10;
-			break;
-		case 1:
-			camera.position.y = 32 * 30;
-			break;
-		case 2:
-			camera.position.y = 32 * 50;
-			break;
-		default:
-			break;
-		}
+		camera.position.x = 32 * 30;
+		camera.position.y = 32 * 30;
+
+		// camera.update();
+
+		// switch ((int) (posX / w)) {
+		// case 0:
+		// camera.position.x = 32 * 10;
+		// break;
+		// case 1:
+		// camera.position.x = 32 * 30;
+		// break;
+		// case 2:
+		// camera.position.x = 32 * 50;
+		// break;
+		// default:
+		// break;
+		// }
+		// switch ((int) (posY / h)) {
+		// case 0:
+		// camera.position.y = 32 * 10;
+		// break;
+		// case 1:
+		// camera.position.y = 32 * 30;
+		// break;
+		// case 2:
+		// camera.position.y = 32 * 50;
+		// break;
+		// default:
+		// break;
+		// }
 		// camera.position.x = posX;
 		// camera.position.y = posY;
 		camera.update();
@@ -317,7 +322,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		// for input
-		sprite.setPosition(posX, posY);
+		// sprite.setPosition(posX, posY);
+		sprite.setPosition(((posX / moveAmount) % 20 + 20) * moveAmount,
+				((posY / moveAmount) % 20 + 20) * moveAmount);
 
 		// for camera
 		batch.setProjectionMatrix(camera.combined);
@@ -348,11 +355,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 				w = Gdx.graphics.getWidth();
 				h = Gdx.graphics.getHeight();
+
+				// camera.translate(0 * 20, 0 * 20);
+				camera.position.x = 32 * 30;
+				camera.position.y = 32 * 30;
+				camera.update();
 			}
 		}
 
 		if (!died) {
-
 			synchronized (players) {
 
 				Iterator<Id> itr = players.keySet().iterator();
@@ -369,7 +380,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 					GUIBombState bi = bombSprite.get(key);
 					if (System.currentTimeMillis() >= bi.timer) {
 						if (bi.sprite == flameSprite) {
-
 							toBeRemoved.add(key);
 							int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
 									.getY() / moveAmount;
@@ -489,8 +499,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		// convert pixel position to tile position
-		cell = collisionLayer.getCell(((int) (posX + xVar)) / moveAmount,
-				(int) (posY + yVar) / moveAmount);
+		// System.out.println("x:" + (20 + ((int) (posX + xVar) / moveAmount))
+		// + "y:" + (20 + (int) ((posY + yVar) / moveAmount)));
+		cell = collisionLayer.getCell(
+				20 + ((int) (posX + xVar) / moveAmount) % 20,
+				20 + ((int) (posY + yVar) / moveAmount) % 20);
 
 		boolean collisionWithBombFlag = false;
 		if (bombSprite.size() > 0) {
@@ -506,7 +519,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			}
 		}
 
-		if ((!collisionWithBombFlag)
+		if ((posX + xVar >= 0 && posY + yVar >= 0)
+				&& (!collisionWithBombFlag)
 				&& (cell == null || (cell != null && !cell.getTile()
 						.getProperties().containsKey("blocked")))) {
 			int xMod = ((int) (posX / moveAmount)) / 20;
@@ -515,12 +529,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			posY += yVar;
 			if (mediator.updatePosition(((int) (posX)) / moveAmount,
 					(int) (posY) / moveAmount)) {
-				sprite.setPosition(posX, posY);
+				// sprite.setPosition(posX, posY);
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
-					// Change the region controller
-					camera.translate(xVar * 20, yVar * 20);
-					camera.update();
+					// camera.translate(xVar * 20, yVar * 20);
+					// camera.update();
 				}
 			}
 		}
@@ -636,8 +649,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 									this.players.put(player.getId(), p);
 								}
 								p.setSize(32.0f, 64.0f);
-								p.setPosition(player.getX() * moveAmount,
-										player.getY() * moveAmount);
+								p.setPosition((20 + player.getX() % 20)
+										* moveAmount, (20 + player.getY() % 20)
+										* moveAmount);
 							} else
 								toBeRemoved.add(player.getId());
 						} else {
