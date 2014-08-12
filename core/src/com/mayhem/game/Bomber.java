@@ -230,36 +230,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		camera.position.x = 32 * 30;
 		camera.position.y = 32 * 30;
 
-		// camera.update();
-
-		// switch ((int) (posX / w)) {
-		// case 0:
-		// camera.position.x = 32 * 10;
-		// break;
-		// case 1:
-		// camera.position.x = 32 * 30;
-		// break;
-		// case 2:
-		// camera.position.x = 32 * 50;
-		// break;
-		// default:
-		// break;
-		// }
-		// switch ((int) (posY / h)) {
-		// case 0:
-		// camera.position.y = 32 * 10;
-		// break;
-		// case 1:
-		// camera.position.y = 32 * 30;
-		// break;
-		// case 2:
-		// camera.position.y = 32 * 50;
-		// break;
-		// default:
-		// break;
-		// }
-		// camera.position.x = posX;
-		// camera.position.y = posY;
 		camera.update();
 
 		new OrthographicCamera(w, h);
@@ -356,7 +326,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				w = Gdx.graphics.getWidth();
 				h = Gdx.graphics.getHeight();
 
-				// camera.translate(0 * 20, 0 * 20);
 				camera.position.x = 32 * 30;
 				camera.position.y = 32 * 30;
 				camera.update();
@@ -381,8 +350,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 					if (System.currentTimeMillis() >= bi.timer) {
 						if (bi.sprite == flameSprite) {
 							toBeRemoved.add(key);
-							int x = (int) bi.sprite.getX() / moveAmount, y = (int) bi.sprite
-									.getY() / moveAmount;
+							int x = bi.getX(), y = bi.getY();
 
 							explodeCellAt(bi, x, y);
 							explodeCellAt(bi, x + 1, y);
@@ -399,6 +367,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 						bi.timer += BOMB_EXPLOSION_TIME;
 					} else {
 						bi.sprite.draw(batch);
+
 						if (bi.sprite == flameSprite) {
 							Sprite right = new Sprite(flameTexture);
 							right.setPosition(bi.sprite.getX() + moveAmount,
@@ -579,7 +548,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		if (allowAddBomb(player)) {
 			Sprite bomb = new Sprite(bombTex);
 			bomb.setSize(32, 32);
-			bomb.setPosition(posX, posY);
+			bomb.setPosition((20 + (posX / moveAmount) % 20) * moveAmount,
+					(20 + (posY / moveAmount) % 20) * moveAmount);
 			bombSprite.put(new Random().nextLong(), new GUIBombState(player,
 					(int) (posX / moveAmount), (int) (posY / moveAmount), bomb,
 					System.currentTimeMillis() + 3000));
