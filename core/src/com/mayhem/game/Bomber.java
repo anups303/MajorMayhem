@@ -275,9 +275,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	protected void explodeCellAt(GUIBombState bi, int x, int y) {
-		Cell c = collisionLayer.getCell(x, y);
+		int cX = x % 20 + 20, cY = y % 20 + 20;
+		Cell c = collisionLayer.getCell(cX, cY);
 		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
-			collisionLayer.setCell(x, y, null);
+			collisionLayer.setCell(cX, cY, null);
 		}
 		if ((bi != null) && (posX / moveAmount == x && posY / moveAmount == y)) {
 			died = true;
