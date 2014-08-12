@@ -39,7 +39,8 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 							coordinator = app.FindRegionController(x, y);
 						}
 						app.leftCoordinator = doTheJob(app, coordinator, x, y,
-								null, app.node.getId(), null, null);
+								null, app.node.getId(), null, null,
+								player.getScore());
 					}
 
 					if (rightRegion) {
@@ -50,7 +51,8 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 							coordinator = app.FindRegionController(x, y);
 						}
 						app.rightCoordinator = doTheJob(app, coordinator, x, y,
-								app.node.getId(), null, null, null);
+								app.node.getId(), null, null, null,
+								player.getScore());
 					}
 
 					if (topRegion) {
@@ -62,7 +64,8 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 						}
 
 						app.topCoordinator = doTheJob(app, coordinator, x, y,
-								null, null, null, app.node.getId());
+								null, null, null, app.node.getId(),
+								player.getScore());
 					}
 					if (bottomRegion) {
 						Id coordinator = app.bottomCoordinator;
@@ -73,7 +76,8 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 						}
 
 						app.bottomCoordinator = doTheJob(app, coordinator, x,
-								y, null, null, app.node.getId(), null);
+								y, null, null, app.node.getId(), null,
+								player.getScore());
 					}
 
 				} else {
@@ -96,7 +100,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	protected Id doTheJob(ClientApplication app, Id coordinator, long x,
 			long y, Id leftCoordinator, Id rightCoordinator, Id topCoordinator,
-			Id bottomCoordinator) {
+			Id bottomCoordinator, int ps) {
 		Id result = coordinator;
 
 		// There is no known RC for the new region
@@ -131,7 +135,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 					app.routeMessage(this.getSender(),
 							new BecomeRegionControllerMessage(this.getSender(),
 									null, null, null, null, this.x, this.y, x,
-									y));
+									y, ps));
 				}
 				// There are some other guys in region
 				// I choose the first one as the new region controller
@@ -147,48 +151,50 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, leftCoordinator,
-										null, null, 0, 0, 0, 0, app.region));
+										null, null, 0, 0, 0, 0, app.region, ps));
 
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), newCoordinator, null,
-										null, null, this.x, this.y, x, y));
+										null, null, this.x, this.y, x, y, ps));
 					} else if (rightCoordinator != null) {
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, rightCoordinator, null,
-										null, null, 0, 0, 0, 0, app.region));
+										null, null, 0, 0, 0, 0, app.region, ps));
 
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, newCoordinator,
-										null, null, this.x, this.y, x, y));
+										null, null, this.x, this.y, x, y, ps));
 					} else if (bottomCoordinator != null) {
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, null,
 										bottomCoordinator, null, 0, 0, 0, 0,
-										app.region));
+										app.region, ps));
 
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, null, null,
-										newCoordinator, this.x, this.y, x, y));
+										newCoordinator, this.x, this.y, x, y,
+										ps));
 					} else if (topCoordinator != null) {
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, null, null,
-										topCoordinator, 0, 0, 0, 0, app.region));
+										topCoordinator, 0, 0, 0, 0, app.region,
+										ps));
 
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, null,
 										newCoordinator, null, this.x, this.y,
-										x, y));
+										x, y, ps));
 					}
 				}
 			}
@@ -200,7 +206,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 						new BecomeRegionControllerMessage(this.getSender(),
 								leftCoordinator, rightCoordinator,
 								topCoordinator, bottomCoordinator, this.x,
-								this.y, x, y));
+								this.y, x, y, ps));
 			}
 		} else {
 
@@ -218,7 +224,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 							new BecomeRegionControllerMessage(newCoordinator,
 									app.leftCoordinator, app.rightCoordinator,
 									app.topCoordinator, app.bottomCoordinator,
-									0, 0, 0, 0, app.region));
+									0, 0, 0, 0, app.region, ps));
 				} else {
 					// TODO: Neighbors should be inform about this movement
 					Id regionId = app.region.RegionId();
@@ -229,7 +235,7 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 			}
 			app.routeMessage(coordinator,
 					new ChangeRegionMessage(this.getSender(), coordinator,
-							this.x, this.y));
+							this.x, this.y, ps));
 		}
 		return result;
 	}

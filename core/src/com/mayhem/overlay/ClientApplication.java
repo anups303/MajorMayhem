@@ -125,14 +125,16 @@ public class ClientApplication implements Application, ScribeClient,
 					if (killedByPlayer != null)
 						this.getRegion().increaseScore(killedByPlayer);
 
-					Id newCoordinator = this.region.players.get(0).getId();
-					this.routeMessage(newCoordinator,
-							new BecomeRegionControllerMessage(newCoordinator,
-									leftCoordinator, rightCoordinator,
-									topCoordinator, bottomCoordinator, 0, 0, 0,
-									0, this.region));
+					PlayerState newCoordinator = this.region.players.get(0);
+					this.routeMessage(
+							newCoordinator.getId(),
+							new BecomeRegionControllerMessage(newCoordinator
+									.getId(), leftCoordinator,
+									rightCoordinator, topCoordinator,
+									bottomCoordinator, 0, 0, 0, 0, this.region,
+									newCoordinator.getScore()));
 
-					this.publishRegionState(newCoordinator);
+					this.publishRegionState(newCoordinator.getId());
 				}
 			}
 
@@ -374,7 +376,8 @@ public class ClientApplication implements Application, ScribeClient,
 									rightCoordinator, topCoordinator,
 									bottomCoordinator, newCoordinator.getX(),
 									newCoordinator.getY(), region.x, region.y,
-									region), null, this);
+									region, newCoordinator.getScore()), null,
+							this);
 
 					// if (newCoordinator.getId() == this.getLocalNodeId()) {
 					//

@@ -11,18 +11,22 @@ public class PlayerState implements Serializable {
 	private boolean alive;
 
 	public PlayerState(Id id) {
-		this(id, -1, -1);
+		this(id, -1, -1, 0);
 	}
 
 	public PlayerState(long x, long y) {
-		this(null, x, y);
+		this(null, x, y, 0);
 	}
 
 	public PlayerState(Id id, long x, long y) {
+		this(id, x, y, 0);
+	}
+
+	public PlayerState(Id id, long x, long y, int score) {
 		this.id = id;
 		this.x = x;
 		this.y = y;
-		score = 0;
+		this.score = score;
 		setAlive(true);
 	}
 

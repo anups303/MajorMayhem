@@ -5,12 +5,14 @@ import rice.p2p.commonapi.Id;
 public class ChangeRegionMessage extends Message {
 	private static final long serialVersionUID = 5921572407345035176L;
 	private long playerX, playerY;
+	private int score;
 
 	public ChangeRegionMessage(Id sender, Id receiver, long playerX,
-			long playerY) {
-		 super(sender, receiver);
+			long playerY, int score) {
+		super(sender, receiver);
 		this.playerX = playerX;
 		this.playerY = playerY;
+		this.score = score;
 	}
 
 	@Override
@@ -25,8 +27,8 @@ public class ChangeRegionMessage extends Message {
 			if (app.bottomCoordinator == this.getSender())
 				app.bottomCoordinator = null;
 
-			app.region.addPlayer(new PlayerState(this.getSender(), this.playerX,
-					this.playerY));
+			app.region.addPlayer(new PlayerState(this.getSender(),
+					this.playerX, this.playerY, this.score));
 			Region r = app.getRegion();
 			app.routeMessage(
 					this.getSender(),

@@ -8,23 +8,26 @@ public class BecomeRegionControllerMessage extends Message {
 	private Id rightCoordinator, leftCoordinator, topCoordinator,
 			bottomCoordinator;
 	private long playerX, playerY, regionX, regionY;
+	private int score;
 	private Region region;
 
 	public BecomeRegionControllerMessage(Id receiver, Id leftCoordinator,
 			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
-			long x, long y, long regionX, long regionY) {
+			long x, long y, long regionX, long regionY, int score) {
 		this(receiver, leftCoordinator, rightCoordinator, topCoordinator,
-				bottomCoordinator, x, y, regionX, regionY, null);
+				bottomCoordinator, x, y, regionX, regionY, null, score);
+
 	}
 
 	public BecomeRegionControllerMessage(Id receiver, Id leftCoordinator,
 			Id rightCoordinator, Id topCoordinator, Id bottomCoordinator,
-			long x, long y, long regionX, long regionY, Region region) {
+			long x, long y, long regionX, long regionY, Region region, int score) {
 		super(null, receiver);
 		this.rightCoordinator = rightCoordinator;
 		this.leftCoordinator = leftCoordinator;
 		this.topCoordinator = topCoordinator;
 		this.bottomCoordinator = bottomCoordinator;
+		this.score = score;
 		this.playerX = x;
 		this.playerY = y;
 		this.regionX = regionX;
@@ -42,7 +45,7 @@ public class BecomeRegionControllerMessage extends Message {
 			app.region = new Region(-1);
 			app.region.setPosition(regionX, regionY);
 			app.region.addPlayer(new PlayerState(app.getLocalNodeId(), playerX,
-					playerY));
+					playerY, score));
 		} else {
 			app.region = this.region;
 			Region r = app.region;
