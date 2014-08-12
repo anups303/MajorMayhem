@@ -410,16 +410,21 @@ public class ClientApplication implements Application, ScribeClient,
 			while (true) {
 				c++;
 				synchronized (lock) {
-					Iterator<Long> itr = recievedAcks.keySet().iterator();
-					while (itr.hasNext())
-						if (msgId == itr.next()) {
-							return recievedAcks.get(msgId);
-						}
+					if (recievedAcks.containsKey(msgId))
+						return recievedAcks.get(msgId);
+					// Iterator<Long> itr = recievedAcks.keySet().iterator();
+					// while (itr.hasNext())
+					// if (msgId == itr.next()) {
+					// return recievedAcks.get(msgId);
+					// }
 					lock.wait(500);
 				}
 				// return null after 2 sec
-				if (c > 0)
+				if (c > 1) {
+					if (recievedAcks.containsKey(msgId))
+						return recievedAcks.get(msgId);
 					return null;
+				}
 			}
 		} catch (Exception ex) {
 			System.out.println(ex);
@@ -427,5 +432,4 @@ public class ClientApplication implements Application, ScribeClient,
 		}
 		return null;
 	}
-
 }

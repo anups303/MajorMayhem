@@ -106,6 +106,9 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 		} else {
 			app.subscribe(this.node.getId().toString());
 			this.app.setRegionController(node.getLocalHandle().getId());
+			Id regionId = app.region.RegionId();
+			app.routeMessage(regionId, new RegionControllerChangedMessage(null,
+					null, regionId, app.getLocalNodeId()));
 		}
 
 	}
