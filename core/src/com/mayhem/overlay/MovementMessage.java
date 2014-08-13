@@ -14,10 +14,6 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	@Override
 	public void execute(ClientApplication app) {
-		app.routeMessage(
-				this.getSender(),
-				new ActionAcknowledgmentMessage(this.getSender(), this
-						.getMessageId(), true));
 		boolean find = false;
 		for (PlayerState player : app.region.getPlayers()) {
 			// If the sender is a member of my region
