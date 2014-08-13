@@ -157,7 +157,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				// bootstrapperPort =
 				// Integer.parseInt(System.getenv("bootstrapperPort"));
 				// }
-				int localPort = (int) (Math.random() * 2000);
+				int localPort = 2000 + (int) (Math.random() * 2000);
 				if (System.getenv("localPort") != null) {
 					localPort = Integer.parseInt(System.getenv("localPort"));
 				}
