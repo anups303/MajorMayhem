@@ -14,6 +14,10 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 
 	@Override
 	public void execute(ClientApplication app) {
+		app.routeMessage(
+				this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this
+						.getMessageId(), true));
 		boolean find = false;
 		for (PlayerState player : app.region.getPlayers()) {
 			// If the sender is a member of my region
@@ -92,10 +96,10 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 			// Then Coordinator has to propagate new game state on the
 			// channel
 			app.publishRegionState();
-		app.routeMessage(
-				this.getSender(),
-				new ActionAcknowledgmentMessage(this.getSender(), this
-						.getMessageId(), find));
+		// app.routeMessage(
+		// this.getSender(),
+		// new ActionAcknowledgmentMessage(this.getSender(), this
+		// .getMessageId(), find));
 	}
 
 	protected Id doTheJob(ClientApplication app, Id coordinator, long x,
