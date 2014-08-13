@@ -502,6 +502,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				// sprite.setPosition(posX, posY);
 				if ((((int) (posX / moveAmount)) / 20) != xMod
 						|| (((int) (posY / moveAmount)) / 20) != yMod) {
+					bombSprite.clear();
 					// camera.translate(xVar * 20, yVar * 20);
 					// camera.update();
 				}
@@ -554,9 +555,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			bombSprite.put(new Random().nextLong(), new GUIBombState(player,
 					(int) (posX / moveAmount), (int) (posY / moveAmount), bomb,
 					System.currentTimeMillis() + 3000));
-
 		}
-
 	}
 
 	@Override

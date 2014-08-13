@@ -17,8 +17,16 @@ public class DieMessage extends Message {
 		try {
 			if (this.killedByPlayer != null
 					&& this.getSender() != this.killedByPlayer)
-				app.getRegion().increaseScore(killedByPlayer);
-			app.getRegion().setAlive(this.getSender(), false);
+				if (app.isCoordinator) {
+					if (app.getRegion().indexOf(this.killedByPlayer) >= 0) {
+						app.getRegion().increaseScore(killedByPlayer);
+						app.getRegion().setAlive(this.getSender(), false);
+					} else {
+						app.routeMessage(this.killedByPlayer, this);
+					}
+				} else {
+					app.routeMessage(app.getRegionController(), this);
+				}
 
 			app.publishRegionState();
 		} catch (Exception ex) {

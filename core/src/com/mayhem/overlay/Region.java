@@ -55,7 +55,7 @@ public class Region implements Serializable {
 		return this.destroyedBlocks;
 	}
 
-	private int indexOf(Id playerId) {
+	public int indexOf(Id playerId) {
 		int j = -1;
 		for (int i = 0; i < this.players.size(); i++) {
 			if (this.players.get(i).getId() == playerId) {
@@ -135,5 +135,13 @@ public class Region implements Serializable {
 			strY = threeZeroes.substring(0, 3 - strY.length()) + strY;
 
 		return rice.pastry.Id.build(strX + strY);
+	}
+
+	public long getX() {
+		return this.x;
+	}
+
+	public long getY() {
+		return this.y;
 	}
 }
