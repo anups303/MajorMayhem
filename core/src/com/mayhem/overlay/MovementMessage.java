@@ -96,10 +96,10 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 			// Then Coordinator has to propagate new game state on the
 			// channel
 			app.publishRegionState();
-		// app.routeMessage(
-		// this.getSender(),
-		// new ActionAcknowledgmentMessage(this.getSender(), this
-		// .getMessageId(), find));
+		app.routeMessage(
+				this.getSender(),
+				new ActionAcknowledgmentMessage(this.getSender(), this
+						.getMessageId(), find));
 	}
 
 	protected Id doTheJob(ClientApplication app, Id coordinator, long x,
