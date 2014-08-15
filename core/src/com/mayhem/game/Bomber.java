@@ -37,6 +37,8 @@ import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
 import com.mayhem.game.Timer;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 //for randomization
 import java.util.*;
 
@@ -59,7 +61,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	final MajorMayhemGame g;
-	private BitmapFont hudFont;
+	private BitmapFont hudFont,hudRtFont;
 	private int score;
 	private Timer timer;
 	private int moveAmount = 32;
@@ -112,12 +114,13 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			flag = false;
 		} else
 			this.mediator = new Mediator();
-
 		// for sprite
 		batch = new SpriteBatch();
 		hudSB = new SpriteBatch();
 		hudFont = new BitmapFont();
-		hudFont.scale(0.75f);
+		hudRtFont = new BitmapFont();
+		hudFont.scale(0.5f);
+		hudRtFont.scale(0.15f);
 		timer = new Timer();
 		timer.start();
 		flameTexture = new Texture(Gdx.files.internal("Explosion_CN.png"));
@@ -406,6 +409,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		hudSB.begin();
 		hudSB.draw(hudTexture, 0, 565);
 		hudFont.setColor(Color.YELLOW);
+		hudRtFont.setColor(Color.YELLOW);
 
 		// hudFont.draw(hudSB, "Time: " + timer.elapsedTime(), 50, 595);
 		if (died) {
@@ -420,6 +424,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			}
 		} else
 			hudFont.draw(hudSB, "Score: " + score, 50, 595);
+		try {
+			hudRtFont.drawMultiLine(hudSB, "Your IP address: " + InetAddress.getLocalHost().getHostAddress().toString() + "\nYour Port: 9001", 400, 595);
+		} catch (UnknownHostException e) {
+			System.out.println(e);
+		}
 		hudSB.end();
 	}
 
