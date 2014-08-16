@@ -33,6 +33,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
+import com.mayhem.overlay.Pair;
 import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
 import com.mayhem.game.Timer;
@@ -61,7 +62,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	final MajorMayhemGame g;
-	private BitmapFont hudFont,hudRtFont;
+	private BitmapFont hudFont, hudRtFont;
 	private int score;
 	private Timer timer;
 	private int moveAmount = 32;
@@ -76,6 +77,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private Sprite sprite, flameSprite;
 	private HashMap<Long, GUIBombState> bombSprite;
 	private HashMap<Id, Sprite> players;
+	private List<Pair<Integer, Integer>> destroyedBlocks;
 	private boolean died = false;
 	private long timeToBackToGame;
 
@@ -220,9 +222,8 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				posY = 32 * (rand.nextInt(mapheight - 2) + 1);
 			}
 		}
-		if (init != null && init.getDestroyedBlocks() != null) {
-			explodeDestroyedBlocks(init);
-		}
+		if (init != null)
+			explodeDestroyedBlocks(init.getDestroyedBlocks());
 
 		sprite.setPosition(posX, posY);
 		Gdx.input.setInputProcessor(this);
@@ -248,12 +249,17 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	}
 
-	protected void explodeDestroyedBlocks(Region init) {
-		if (init != null && init.getDestroyedBlocks() != null)
-			for (int i = 0; i < init.getDestroyedBlocks().size(); i++) {
-				explodeCellAt(null, init.getDestroyedBlocks().get(i).getLeft(),
-						init.getDestroyedBlocks().get(i).getRight());
-			}
+	protected void explodeDestroyedBlocks(List<Pair<Integer, Integer>> blocks) {
+		if (mapId != newMapId && blocks != null) {
+			destroyedBlocks = blocks;
+			System.out.println(mapId + "," + newMapId);
+		} else {
+			if (blocks != null)
+				for (int i = 0; i < blocks.size(); i++) {
+					explodeCellAt(null, blocks.get(i).getLeft(), blocks.get(i)
+							.getRight());
+				}
+		}
 	}
 
 	@Override
@@ -333,6 +339,10 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				camera.position.x = 32 * 30;
 				camera.position.y = 32 * 30;
 				camera.update();
+
+				explodeDestroyedBlocks(destroyedBlocks);
+				destroyedBlocks = null;
+
 			}
 		}
 
@@ -425,7 +435,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		} else
 			hudFont.draw(hudSB, "Score: " + score, 50, 595);
 		try {
-			hudRtFont.drawMultiLine(hudSB, "Your IP address: " + InetAddress.getLocalHost().getHostAddress().toString() + "\nYour Port: 9001", 400, 595);
+			hudRtFont.drawMultiLine(hudSB, "Your IP address: "
+					+ InetAddress.getLocalHost().getHostAddress().toString()
+					+ "\nYour Port: 9001", 400, 595);
 		} catch (UnknownHostException e) {
 			System.out.println(e);
 		}
@@ -664,14 +676,15 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 					}
 				}
 
-			explodeDestroyedBlocks(region);
-
 			synchronized (mapId) {
 				if (mapId != region.getMapId()) {
 					newMapId = region.getMapId();
 					System.out.println("change mapId to:" + newMapId);
 				}
 			}
+
+			if (region != null)
+				explodeDestroyedBlocks(region.getDestroyedBlocks());
 		} catch (Exception e) {
 			System.out.println(e);
 		}
