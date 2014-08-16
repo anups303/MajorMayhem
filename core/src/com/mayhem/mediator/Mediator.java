@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
 
 import rice.environment.Environment;
@@ -101,7 +102,7 @@ public class Mediator {
 	public void leaveGame(Id killedByPlayer) {
 		nodeLauncher.leaveGame(killedByPlayer);
 	}
-	
+
 	public void died(Id killedByPlayer) {
 		nodeLauncher.died(killedByPlayer);
 	}
@@ -109,8 +110,12 @@ public class Mediator {
 	public Id GetNodeId() {
 		return nodeLauncher.GetNodeId();
 	}
-	
-	public Region getRegionState(){
+
+	public Region getRegionState() {
 		return nodeLauncher.getApplication().getRegion();
+	}
+
+	public HashMap<String, Integer> getPlayersScore() {
+		return nodeLauncher.getPlayersScore();
 	}
 }

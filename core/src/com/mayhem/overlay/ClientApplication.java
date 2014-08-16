@@ -435,4 +435,11 @@ public class ClientApplication implements Application, ScribeClient,
 		}
 		return null;
 	}
+
+	public HashMap<String, Integer> getPlayersScore(int depth) {
+		HashMap<String, Integer> result = new HashMap<String, Integer>();
+		for (PlayerState player : region.players)
+			result.put(player.getId().toString(), player.getScore());
+		return result;
+	}
 }
