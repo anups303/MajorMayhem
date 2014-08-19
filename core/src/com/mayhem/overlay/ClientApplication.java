@@ -145,17 +145,14 @@ public class ClientApplication implements Application, ScribeClient,
 		}
 	}
 
-	protected void routeMessage(Id id, com.mayhem.overlay.Message msg) {
-		// bootHandle =
-		// ((SocketPastryNodeFactory)factory).getNodeHandle(bootaddress);
-
-		MessageReceipt mr = endpoint.route(id, msg, null, this);
-
+	protected void routeMessage(Id receiver, com.mayhem.overlay.Message msg) {
+		// MessageReceipt mr =
+		endpoint.route(receiver, msg, null, this);
 	}
 
-	protected void routeMessageDirect(NodeHandle nh,
+	protected void routeMessageDirect(NodeHandle receiver,
 			com.mayhem.overlay.Message msg) {
-		endpoint.route(null, msg, nh);
+		endpoint.route(null, msg, receiver);
 	}
 
 	public void deliver(Id id, Message message) {

@@ -1,11 +1,8 @@
 package com.mayhem.mediator;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.List;
 
 import rice.environment.Environment;
 import rice.p2p.commonapi.Id;
@@ -13,7 +10,6 @@ import rice.p2p.commonapi.Id;
 import com.mayhem.overlay.ClientApplication;
 import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.NodeLauncher;
-import com.mayhem.overlay.PlayerState;
 import com.mayhem.overlay.Region;
 
 public class Mediator {

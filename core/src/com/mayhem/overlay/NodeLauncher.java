@@ -235,6 +235,30 @@ public class NodeLauncher implements IActionAcknowledgmentListner {
 	}
 
 	public HashMap<String, Integer> getPlayersScore() {
-		return app.getPlayersScore(0);
+		ScoreMessage msg = new ScoreMessage(node.getNodeId(),
+				this.app.getRegionController());
+		long msgId = msg.getMessageId();
+		app.routeMessage(this.app.getRegionController(), msg);
+		try {
+			synchronized (lock) {
+				// We will wait until the ACK receives
+				int c = 0;
+				while (true) {
+					lock.wait(500);
+					Iterator<Long> itr = recievedAcks.keySet().iterator();
+					while (itr.hasNext())
+						if (msgId == itr.next()) {
+							if (recievedAcks.get(msgId) instanceof HashMap<?, ?>)
+								return (HashMap<String, Integer>) recievedAcks
+										.get(msgId);
+						}
+					if (c++ == 10)
+						break;
+				}
+			}
+		} catch (Exception ex) {
+			// return false;
+		}
+		return null;
 	}
 }
