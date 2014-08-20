@@ -48,6 +48,10 @@ public class Message implements rice.p2p.commonapi.Message {
 		return ttl;
 	}
 
+	public void setTTL(int value) {
+		this.ttl = value;
+	}
+
 	@Override
 	public String toString() {
 		return this.getClass().toString() + "-Receiver:" + this.receiver;

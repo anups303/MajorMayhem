@@ -24,9 +24,11 @@ import rice.pastry.leafset.LeafSet;
 public class ClientApplication implements Application, ScribeClient,
 		DeliveryNotification {
 
-	private final Object lock = new Object();
+	private final Object lookupReplylock = new Object();
+	private final Object scoreReplylock = new Object();
 	protected HashSet<Long> messageId;
-	protected Map<Long, Id> recievedAcks;
+	protected Map<Long, Id> recievedLookupReplyAcks;
+	protected Map<Long, Object> recievedScoreReplyAcks;
 
 	protected List<IActionAcknowledgmentListner> actionAcknowledgmentlisteners = new ArrayList<IActionAcknowledgmentListner>();
 	protected List<IRegionStateListener> regionStateListeners = new ArrayList<IRegionStateListener>();
@@ -47,7 +49,8 @@ public class ClientApplication implements Application, ScribeClient,
 
 	public ClientApplication(PastryNode node, boolean isNewGame) {
 		messageId = new HashSet<Long>();
-		recievedAcks = new HashMap<Long, Id>();
+		recievedLookupReplyAcks = new HashMap<Long, Id>();
+		recievedScoreReplyAcks = new HashMap<Long, Object>();
 
 		this.isCoordinator = isNewGame;
 		this.node = node;
@@ -391,9 +394,9 @@ public class ClientApplication implements Application, ScribeClient,
 
 	public void regionControllerLookupReplyReceived(long messageId,
 			Id coordinator) {
-		synchronized (lock) {
-			recievedAcks.put(messageId, coordinator);
-			lock.notifyAll();
+		synchronized (lookupReplylock) {
+			recievedLookupReplyAcks.put(messageId, coordinator);
+			lookupReplylock.notifyAll();
 		}
 	}
 
@@ -409,20 +412,15 @@ public class ClientApplication implements Application, ScribeClient,
 			// We will wait until the ACK receives
 			while (true) {
 				c++;
-				synchronized (lock) {
-					if (recievedAcks.containsKey(msgId))
-						return recievedAcks.get(msgId);
-					// Iterator<Long> itr = recievedAcks.keySet().iterator();
-					// while (itr.hasNext())
-					// if (msgId == itr.next()) {
-					// return recievedAcks.get(msgId);
-					// }
-					lock.wait(500);
+				synchronized (lookupReplylock) {
+					if (recievedLookupReplyAcks.containsKey(msgId))
+						return recievedLookupReplyAcks.get(msgId);
+					lookupReplylock.wait(500);
 				}
-				// return null after 2 sec
+				// return null after 2 seconds
 				if (c > 1) {
-					if (recievedAcks.containsKey(msgId))
-						return recievedAcks.get(msgId);
+					if (recievedLookupReplyAcks.containsKey(msgId))
+						return recievedLookupReplyAcks.get(msgId);
 					return null;
 				}
 			}
@@ -433,10 +431,67 @@ public class ClientApplication implements Application, ScribeClient,
 		return null;
 	}
 
+	public void scoreReplyReceived(long messageId,
+			HashMap<String, Integer> scores) {
+		synchronized (scoreReplylock) {
+			recievedScoreReplyAcks.put(messageId, scores);
+			scoreReplylock.notifyAll();
+		}
+	}
+
 	public HashMap<String, Integer> getPlayersScore(int depth) {
 		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		for (PlayerState player : region.players)
 			result.put(player.getId().toString(), player.getScore());
+
+		if (depth > 0) {
+			HashMap<String, Integer> tmp = getNeighborScore(
+					this.leftCoordinator, depth);
+			if (tmp != null)
+				result.putAll(tmp);
+			tmp = getNeighborScore(this.rightCoordinator, depth);
+			if (tmp != null)
+				result.putAll(tmp);
+			tmp = getNeighborScore(this.topCoordinator, depth);
+			if (tmp != null)
+				result.putAll(tmp);
+			tmp = getNeighborScore(this.bottomCoordinator, depth);
+			if (tmp != null)
+				result.putAll(tmp);
+		}
 		return result;
+	}
+
+	private HashMap<String, Integer> getNeighborScore(Id neighbor, int depth) {
+		if (neighbor != null) {
+			ScoreMessage msg = new ScoreMessage(this.getLocalNodeId(), neighbor);
+			msg.setTTL(depth);
+			long msgId = msg.getMessageId();
+			this.routeMessage(neighbor, msg);
+			try {
+				int c = 0;
+				// We will wait until the ACK receives
+				while (true) {
+					c++;
+					synchronized (scoreReplylock) {
+						if (recievedScoreReplyAcks.containsKey(msgId))
+							return (HashMap<String, Integer>) recievedScoreReplyAcks
+									.get(msgId);
+						lookupReplylock.wait(500);
+					}
+					// return null after 2 seconds
+					if (c > 1) {
+						if (recievedScoreReplyAcks.containsKey(msgId))
+							return (HashMap<String, Integer>) recievedScoreReplyAcks
+									.get(msgId);
+						return null;
+					}
+				}
+			} catch (Exception ex) {
+				System.out.println(ex);
+				// return false;
+			}
+		}
+		return null;
 	}
 }
