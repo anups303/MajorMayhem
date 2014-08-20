@@ -2,6 +2,11 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//This message will send whenever we wants a player to join a new RC
+//1st scenario: Right after sending join message, requester will receive this message
+//2nd scenario: When user is about to move to another region that already has RC
+//3rd scenario: When the RC (due to whatever reason) is about to change, all the players in the region will 
+//				receive this message
 public class JoinReplyMessage extends ActionAcknowledgmentMessage {
 	private static final long serialVersionUID = 2582711063525648800L;
 	String channelName;

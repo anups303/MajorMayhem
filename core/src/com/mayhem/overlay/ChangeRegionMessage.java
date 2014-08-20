@@ -2,6 +2,10 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//When a player moves across the regions
+//this message will send to the RC of the region player intended to move into it
+//so RC will add the player to its list
+//and send JoinReply message to the node
 public class ChangeRegionMessage extends Message {
 	private static final long serialVersionUID = 5921572407345035176L;
 	private long playerX, playerY;

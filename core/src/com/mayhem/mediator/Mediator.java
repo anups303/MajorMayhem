@@ -12,6 +12,7 @@ import com.mayhem.overlay.IRegionStateListener;
 import com.mayhem.overlay.NodeLauncher;
 import com.mayhem.overlay.Region;
 
+//Mediating between GUI and overlay
 public class Mediator {
 	protected Environment environment;
 	protected NodeLauncher nodeLauncher;
@@ -22,7 +23,7 @@ public class Mediator {
 		return joinGame(bootIp, bootport, regionStateListener, 9001);
 	}
 
-	// Create and configure a new environment for overlay
+	//Join the overlay and an existing game 
 	public Region joinGame(String bootIp, int bootport,
 			IRegionStateListener regionStateListener, int bindPort) {
 		try {
@@ -36,6 +37,7 @@ public class Mediator {
 
 			environment = new Environment();
 
+			//Disable NAT (Built-in Freepastry)
 			environment.getParameters().setString("nat_search_policy", "never");
 			InetAddress bootaddr = InetAddress.getByName(bootIp);
 			InetSocketAddress bootaddress = new InetSocketAddress(bootaddr,
@@ -53,25 +55,23 @@ public class Mediator {
 		return nodeLauncher.getRegion();
 	}
 
+	// Create and configure a new environment for overlay
 	public int newGame(IRegionStateListener regionStateListener) {
 
 		try {
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			int bootport, bindport = 9001;
 			bootport = bindport;
-
-			environment = new Environment();
-
-			environment.getParameters().setString("nat_search_policy", "never");
-
 			InetAddress bootaddr = InetAddress.getByName(ip);
-
 			InetSocketAddress bootaddress = new InetSocketAddress(bootaddr,
 					bootport);
-
+			
+			environment = new Environment();
+			
+			//Disable NAT (Built-in Freepastry)
+			environment.getParameters().setString("nat_search_policy", "never");
 			nodeLauncher = new NodeLauncher(bindport, bootaddress, environment,
 					true, regionStateListener);
-
 			app = nodeLauncher.getApplication();
 		} catch (Exception e) {
 			return -1;
@@ -80,6 +80,7 @@ public class Mediator {
 		return app.getRegion().getMapId();
 	}
 
+	//Let coordinator knows about new position and wait for ACK
 	public boolean updatePosition(int x, int y) {
 		if (nodeLauncher != null)
 			return nodeLauncher.SendCoordinatorMovementMessage(x, y);
@@ -87,18 +88,17 @@ public class Mediator {
 			return false;
 	}
 
+	//Let coordinator knows about bomb placement and wait for ACK
 	public boolean bombPlacement(int x, int y) {
 		return nodeLauncher.SendCoordinatorBombPlacementMessage(x, y);
 	}
 
+	//Graceful leave
 	public void leaveGame() {
 		nodeLauncher.leaveGame();
 	}
 
-	public void leaveGame(Id killedByPlayer) {
-		nodeLauncher.leaveGame(killedByPlayer);
-	}
-
+	//Killed by player: 
 	public void died(Id killedByPlayer) {
 		nodeLauncher.died(killedByPlayer);
 	}
@@ -111,6 +111,7 @@ public class Mediator {
 		return nodeLauncher.getApplication().getRegion();
 	}
 
+	//Ask coordinator to get players' score
 	public HashMap<String, Integer> getPlayersScore() {
 		return nodeLauncher.getPlayersScore();
 	}

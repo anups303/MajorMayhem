@@ -2,6 +2,7 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//This message will send to RC when players move
 public class MovementMessage extends Message implements IAcknowledgeable {
 	private static final long serialVersionUID = 6561350713073687226L;
 	private int x, y;
@@ -15,83 +16,100 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 	@Override
 	public void execute(ClientApplication app) {
 		boolean find = false;
-		for (PlayerState player : app.region.getPlayers()) {
-			// If the sender is a member of my region
-			if (player.getId() == this.getSender()) {
-				find = true;
-				player.setAlive(true);
-				boolean leftRegion = (player.getX() / 20) == (this.getX() / 20) + 1;
-				boolean rightRegion = (player.getX() / 20) + 1 == (this.getX() / 20);
-				boolean topRegion = (player.getY() / 20) + 1 == (this.getY() / 20);
-				boolean bottomRegion = (player.getY() / 20) == (this.getY() / 20) + 1;
+		
+		//If I am the RC
+		if (app.isCoordinator)
+			for (PlayerState player : app.region.getPlayers()) {
+				// Make sure that sender is a member of the region
+				if (player.getId() == this.getSender()) {
+					find = true;
+					//Mark him as live
+					player.setAlive(true);
+					
+					boolean leftRegion = (player.getX() / 20) == (this.getX() / 20) + 1;
+					boolean rightRegion = (player.getX() / 20) + 1 == (this
+							.getX() / 20);
+					boolean topRegion = (player.getY() / 20) + 1 == (this
+							.getY() / 20);
+					boolean bottomRegion = (player.getY() / 20) == (this.getY() / 20) + 1;
 
-				if ((leftRegion || rightRegion || topRegion || bottomRegion)
-						&& (player.getX() != -1 && player.getY() != -1)) {
+					//Check if player is about to move to another region
+					if ((leftRegion || rightRegion || topRegion || bottomRegion)
+							&& (player.getX() != -1 && player.getY() != -1)) {
+						
+						//remove it from this region
+						app.region.removePlayerById(this.getSender());
 
-					// User's about to move to another region!
-					app.region.removePlayerById(this.getSender());
+						//If player is moving the left region
+						if (leftRegion) {
+							Id coordinator = app.leftCoordinator;
+							long x = app.region.x - (20 + 1), y = app.region.y;
 
-					if (leftRegion) {
-						Id coordinator = app.leftCoordinator;
-						long x = app.region.x - (20 + 1), y = app.region.y;
-
-						if (coordinator == null) {
-							coordinator = app.FindRegionController(x, y);
-						}
-						app.leftCoordinator = doTheJob(app, coordinator, x, y,
-								null, app.node.getId(), null, null,
-								player.getScore());
-					}
-
-					if (rightRegion) {
-						Id coordinator = app.rightCoordinator;
-						long x = app.region.x + (20 + 1), y = app.region.y;
-
-						if (coordinator == null) {
-							coordinator = app.FindRegionController(x, y);
-						}
-						app.rightCoordinator = doTheJob(app, coordinator, x, y,
-								app.node.getId(), null, null, null,
-								player.getScore());
-					}
-
-					if (topRegion) {
-						Id coordinator = app.topCoordinator;
-						long x = app.region.x, y = app.region.y + (20 + 1);
-
-						if (coordinator == null) {
-							coordinator = app.FindRegionController(x, y);
+							//In case that RC has no link the left region
+							//it has to make sure that there is no such RC whatsoever
+							//(check FindRegionController to see how!) 
+							if (coordinator == null) {
+								coordinator = app.FindRegionController(x, y);
+							}
+							app.leftCoordinator = doTheJob(app, coordinator, x,
+									y, null, app.node.getId(), null, null,
+									player.getScore());
 						}
 
-						app.topCoordinator = doTheJob(app, coordinator, x, y,
-								null, null, null, app.node.getId(),
-								player.getScore());
-					}
-					if (bottomRegion) {
-						Id coordinator = app.bottomCoordinator;
-						long x = app.region.x, y = app.region.y - (20 + 1);
+						if (rightRegion) {
+							Id coordinator = app.rightCoordinator;
+							long x = app.region.x + (20 + 1), y = app.region.y;
 
-						if (coordinator == null) {
-							coordinator = app.FindRegionController(x, y);
+							if (coordinator == null) {
+								coordinator = app.FindRegionController(x, y);
+							}
+							app.rightCoordinator = doTheJob(app, coordinator,
+									x, y, app.node.getId(), null, null, null,
+									player.getScore());
 						}
 
-						app.bottomCoordinator = doTheJob(app, coordinator, x,
-								y, null, null, app.node.getId(), null,
-								player.getScore());
-					}
+						if (topRegion) {
+							Id coordinator = app.topCoordinator;
+							long x = app.region.x, y = app.region.y + (20 + 1);
 
-				} else {
+							if (coordinator == null) {
+								coordinator = app.FindRegionController(x, y);
+							}
+
+							app.topCoordinator = doTheJob(app, coordinator, x,
+									y, null, null, null, app.node.getId(),
+									player.getScore());
+						}
+						if (bottomRegion) {
+							Id coordinator = app.bottomCoordinator;
+							long x = app.region.x, y = app.region.y - (20 + 1);
+
+							if (coordinator == null) {
+								coordinator = app.FindRegionController(x, y);
+							}
+
+							app.bottomCoordinator = doTheJob(app, coordinator,
+									x, y, null, null, app.node.getId(), null,
+									player.getScore());
+						}
+
+					} 
 					// Stays in the same region
-					player.setX(this.getX());
-					player.setY(this.getY());
-					break;
+					else {						
+						player.setX(this.getX());
+						player.setY(this.getY());
+						break;
+					}
 				}
 			}
-		}
+		
+		//In case of the player found in the region
 		if (find)
-			// Then Coordinator has to propagate new game state on the
-			// channel
+			// Then Coordinator has to propagate new game status on the channel
 			app.publishRegionState();
+		
+		//and let the sender knows about its action 
+		//by sending ACK
 		app.routeMessage(
 				this.getSender(),
 				new ActionAcknowledgmentMessage(this.getSender(), this
@@ -107,12 +125,13 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 		if (coordinator == null) {
 
 			// If I'm the region controller and I'm moving to
-			// another region I have to let another node in the
+			// another region, I have to let another node in the
 			// region to be coordinator
 			if (app.node.getId() == this.getSender()) {
 				// I'm the only one in the region and I'm moving
 				// to an empty region
 				if (app.region.players.size() == 0) {
+					//I just have to inform my neighbors to set their link to NULL
 					if (app.leftCoordinator != null)
 						app.routeMessage(app.leftCoordinator,
 								new NeighborCoordinatorChangedMessage(
@@ -137,58 +156,76 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 									null, null, null, null, this.x, this.y, x,
 									y, ps));
 				}
-				// There are some other guys in region
-				// I choose the first one as the new region controller
-				// and I set myself as a the region controller of the new region
-				// that I'm moving in
+				// There are some other players in region
 				else {
+					// I choose the first one as the new region controller
+					// and I set myself as a the region controller of the new region
+					// that I'm moving in
 					Id newCoordinator = app.region.players.get(0).getId();
 
 					app.publishRegionState(newCoordinator);
 
-					// Id l = null, r = null, t = null, b = null;
+					//If I am moving to right
 					if (leftCoordinator != null) {
+						//Let the new RC knows that I am on its left side and also become the RC of region 
+						//that I'm leaving
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, leftCoordinator,
 										null, null, 0, 0, 0, 0, app.region, ps));
 
+						//And send me a message to become RC
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), newCoordinator, null,
 										null, null, this.x, this.y, x, y, ps));
-					} else if (rightCoordinator != null) {
+					} 
+					//If I am moving to left
+					else if (rightCoordinator != null) {
+						//Let the new RC knows that I am on its left side and also become the RC of region 
+						//that I'm leaving
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, rightCoordinator, null,
 										null, null, 0, 0, 0, 0, app.region, ps));
 
+						//And send me a message to become RC
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, newCoordinator,
 										null, null, this.x, this.y, x, y, ps));
-					} else if (bottomCoordinator != null) {
+					} 
+					//If I am moving to top
+					else if (bottomCoordinator != null) {
+						//Let the new RC knows that I am on its bottom side and also become the RC of region 
+						//that I'm leaving
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, null,
 										bottomCoordinator, null, 0, 0, 0, 0,
 										app.region, ps));
 
+						//And send me a message to become RC
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
 										.getSender(), null, null, null,
 										newCoordinator, this.x, this.y, x, y,
 										ps));
-					} else if (topCoordinator != null) {
+					} 
+					//If I am moving to bottom
+					else if (topCoordinator != null) {
+						//Let the new RC knows that I am on its top side and also become the RC of region 
+						//that I'm leaving
 						app.routeMessage(newCoordinator,
 								new BecomeRegionControllerMessage(
 										newCoordinator, null, null, null,
 										topCoordinator, 0, 0, 0, 0, app.region,
 										ps));
 
+						//And send me a message to become RC
 						app.routeMessage(
 								this.getSender(),
 								new BecomeRegionControllerMessage(this
@@ -198,9 +235,9 @@ public class MovementMessage extends Message implements IAcknowledgeable {
 					}
 				}
 			}
-			// If I'm not region controller and I'm moving to a new region,
-			// I should become the region controller of the new region
+			// If I'm not region controller and I'm moving to a new region
 			else {
+				// I should become the region controller of the new region
 				result = this.getSender();
 				app.routeMessage(this.getSender(),
 						new BecomeRegionControllerMessage(this.getSender(),

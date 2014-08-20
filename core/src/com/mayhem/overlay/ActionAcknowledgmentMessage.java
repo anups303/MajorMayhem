@@ -2,6 +2,7 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//Ack Message will send to confirm an action
 public class ActionAcknowledgmentMessage extends Message {
 	private static final long serialVersionUID = -5801612284171523108L;
 
@@ -31,5 +32,4 @@ public class ActionAcknowledgmentMessage extends Message {
 	public boolean getValid() {
 		return this.valid;
 	}
-
 }

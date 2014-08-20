@@ -2,6 +2,8 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//This message will send to the RC when the user want to close the game window
+//(graceful leave)
 public class LeaveMessage extends Message {
 	private static final long serialVersionUID = -2042122046463742754L;
 
@@ -21,7 +23,7 @@ public class LeaveMessage extends Message {
 			System.out.println("Leave:" + this.getSender());
 			app.publishRegionState();
 		} catch (Exception ex) {
-
+			//TODO: log here!
 		}
 	}
 

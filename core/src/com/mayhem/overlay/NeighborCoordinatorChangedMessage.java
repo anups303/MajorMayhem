@@ -2,6 +2,8 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//When a RC being changed, this message will send to the direct neighbors (left, right, top, bottom)
+//to let them change their corresponding neighbor
 public class NeighborCoordinatorChangedMessage extends Message {
 	private static final long serialVersionUID = -5570937915455995938L;
 	private Id newCoordinator;

@@ -2,6 +2,7 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//Receiver will be the region controller of specified region
 public class BecomeRegionControllerMessage extends Message {
 	private static final long serialVersionUID = -5687474576945358060L;
 
@@ -41,12 +42,18 @@ public class BecomeRegionControllerMessage extends Message {
 		app.setRegionController(app.getLocalNodeId());
 		app.subscribe(app.getLocalNodeId().toString());
 
+		// If there's no information about the region
+		// create a new region
 		if (this.region == null) {
 			app.region = new Region(-1);
 			app.region.setPosition(regionX, regionY);
 			app.region.addPlayer(new PlayerState(app.getLocalNodeId(), playerX,
 					playerY, score));
-		} else {
+		}
+		//otherwise, load the previous status of region
+		//and let the players of region know that RC has changed 
+		//by sending JoinReplyMessage
+		else {
 			app.region = this.region;
 			Region r = app.region;
 			for (PlayerState player : app.region.getPlayers())
@@ -60,9 +67,14 @@ public class BecomeRegionControllerMessage extends Message {
 
 		}
 		Id regionId = app.region.RegionId();
+		
+		//Here we send a message to a node which is responsible for this region id
+		//to know that this node is the RC of corresponding region
 		app.routeMessage(regionId, new RegionControllerChangedMessage(null,
 				null, regionId, app.getLocalNodeId()));
 
+		//Also the direct neighbor should be contacted 
+		//to know about this change (change their neighbors)
 		app.leftCoordinator = this.getLeftCoordinator();
 		if (app.leftCoordinator != null)
 			app.routeMessage(app.leftCoordinator,

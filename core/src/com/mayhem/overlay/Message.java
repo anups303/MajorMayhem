@@ -2,6 +2,8 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+
+//Base class for messages in our application
 public class Message implements rice.p2p.commonapi.Message {
 	private static final long serialVersionUID = -537925666393304992L;
 	private long messageId;
@@ -20,6 +22,7 @@ public class Message implements rice.p2p.commonapi.Message {
 		return Message.LOW_PRIORITY;
 	}
 
+	//It has to be implemented by each class  
 	public void execute(ClientApplication app) {
 
 	}

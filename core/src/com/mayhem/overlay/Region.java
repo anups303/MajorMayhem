@@ -9,6 +9,7 @@ import rice.p2p.commonapi.Id;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+//Data-Object class which maintain state of a region
 public class Region implements Serializable {
 	private static final long serialVersionUID = 5702811196026168131L;
 	protected static final int WIDTH = 20, HEIGHT = 20;
@@ -55,6 +56,7 @@ public class Region implements Serializable {
 		return this.destroyedBlocks;
 	}
 
+	//Find a player by its Id
 	public int indexOf(Id playerId) {
 		int j = -1;
 		for (int i = 0; i < this.players.size(); i++) {
@@ -66,6 +68,7 @@ public class Region implements Serializable {
 		return j;
 	}
 
+	//Remove a player by its Id
 	public boolean removePlayerById(Id playerId) {
 		int j = indexOf(playerId);
 
@@ -104,6 +107,7 @@ public class Region implements Serializable {
 		return null;
 	}
 
+	//Increase the score of a player
 	public void increaseScore(Id playerId) {
 		int j = indexOf(playerId);
 
@@ -122,6 +126,7 @@ public class Region implements Serializable {
 		return Region.RegionId(this.x, this.y);
 	}
 
+	//Calculate regionId base of the region base position
 	public static Id RegionId(long x, long y) {
 		String threeZeroes = "000";
 		String strX = Long.toHexString(x / 20), strY = Long.toHexString(y / 20);

@@ -264,7 +264,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public void dispose() {
-		mediator.leaveGame(null);
+		mediator.leaveGame();
 		// batch.dispose();
 		hudSB.dispose();
 		texture.dispose();

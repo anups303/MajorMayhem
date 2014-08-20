@@ -3,6 +3,8 @@ package com.mayhem.overlay;
 import java.io.Serializable;
 import rice.p2p.commonapi.Id;
 
+
+//Data-Object class which maintain state of a player
 public class PlayerState implements Serializable {
 	private static final long serialVersionUID = 4147854283318896390L;
 	private Id id;

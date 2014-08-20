@@ -2,6 +2,7 @@ package com.mayhem.overlay;
 
 import java.io.Serializable;
 
+
 public class Pair<L, R> implements Serializable {
 	private static final long serialVersionUID = -8860887403740444936L;
 	private final L left;
