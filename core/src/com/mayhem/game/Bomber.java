@@ -426,7 +426,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 			long d = ((timeToBackToGame - System.currentTimeMillis()) / 1000);
 			hudFont.draw(hudSB,
 					"You have been killed. You will be back to game in " + d
-							+ "s", 50, 595);
+							+ "s", 50, 630);
 			if (d <= 0) {
 				mediator.updatePosition(((int) (posX)) / moveAmount,
 						(int) (posY) / moveAmount);
