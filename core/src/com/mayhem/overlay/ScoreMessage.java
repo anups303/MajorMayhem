@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import rice.p2p.commonapi.Id;
 
+//This message will be send to gather score of neighbor regions
 public class ScoreMessage extends Message {
 	private static final long serialVersionUID = -2267061994769492176L;
 	private final Object lock = new Object();

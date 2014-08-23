@@ -3,6 +3,8 @@ package com.mayhem.overlay;
 import java.util.List;
 import rice.p2p.commonapi.Id;
 
+//This is the content of channel which is used to propagate region info to
+//region members by RC
 public class RegionStateChannelContent extends ChannelContent {
 	private static final long serialVersionUID = 2522899394681916995L;
 

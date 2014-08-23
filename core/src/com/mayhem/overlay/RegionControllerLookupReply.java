@@ -2,6 +2,8 @@ package com.mayhem.overlay;
 
 import rice.p2p.commonapi.Id;
 
+//This message is a reply to RegionControllerLookup
+//and will send to the sender of RegionControllerLookup to inform it about RC of queried region
 public class RegionControllerLookupReply extends Message {
 
 	private static final long serialVersionUID = -5389766882795085505L;

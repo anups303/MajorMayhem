@@ -2,7 +2,8 @@ package com.mayhem.overlay;
 
 import java.io.Serializable;
 
-
+//Utility class to maintain a pair of two object
+//REF: http://stackoverflow.com/questions/521171/a-java-collection-of-value-pairs-tuples
 public class Pair<L, R> implements Serializable {
 	private static final long serialVersionUID = -8860887403740444936L;
 	private final L left;
