@@ -1,5 +1,7 @@
 package com.mayhem.game;
 
+import java.util.HashMap;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -19,6 +21,7 @@ public class ScoreScreen implements InputProcessor, Screen {
 	private int score, port;
 	private String ip;
 	private Mediator mediator;
+	private HashMap<String, Integer> scoreMap;
 	
 	public ScoreScreen(final MajorMayhemGame game, int score, String ip, int port, Mediator mediator) {
 		this.g = game;
@@ -28,6 +31,8 @@ public class ScoreScreen implements InputProcessor, Screen {
 		this.port = port;
 		this.ip = ip;
 		this.mediator = mediator;
+		scoreMap = new HashMap<String, Integer>();
+		scoreMap = mediator.getPlayersScore();
 	}
 
 	@Override
@@ -40,10 +45,11 @@ public class ScoreScreen implements InputProcessor, Screen {
 		font.draw(batch, "Top Scores", 275, 600);
 		font.setColor(Color.RED);
 		font.draw(batch, "You - "+score, 20, 500);
-		font.setColor(Color.YELLOW);		
-		for(int i=0; i<10; i++) {
+		font.setColor(Color.YELLOW);
+		//makeshift score list
+/*		for(int i=0; i<10; i++) {
 			font.draw(batch, "Player "+(i+1)+" - ??", 20, 450-(50*i));
-		}
+		}*/
 		batch.end();
 		
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
