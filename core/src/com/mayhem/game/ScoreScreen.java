@@ -23,7 +23,7 @@ public class ScoreScreen implements InputProcessor, Screen {
 	private Mediator mediator;
 	private HashMap<String, Integer> scoreMap;
 	
-	public ScoreScreen(final MajorMayhemGame game, int score, String ip, int port, Mediator mediator) {
+	public ScoreScreen(final MajorMayhemGame game, int score, String ip, int port, Mediator mediator, HashMap<String, Integer> scoreMap) {
 		this.g = game;
 		this.score = score;
 		batch = new SpriteBatch();
@@ -31,8 +31,8 @@ public class ScoreScreen implements InputProcessor, Screen {
 		this.port = port;
 		this.ip = ip;
 		this.mediator = mediator;
-		scoreMap = new HashMap<String, Integer>();
-		scoreMap = mediator.getPlayersScore();
+		this.scoreMap = scoreMap;
+//		System.out.println(scoreMap.values());
 	}
 
 	@Override

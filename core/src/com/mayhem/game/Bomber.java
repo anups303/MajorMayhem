@@ -80,6 +80,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	private List<Pair<Integer, Integer>> destroyedBlocks;
 	private boolean died = false;
 	private long timeToBackToGame;
+	private HashMap<String, Integer> scoreMap;
 
 	// for input
 	private float posX, posY;
@@ -125,6 +126,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		hudRtFont.scale(0.15f);
 		timer = new Timer();
 		timer.start();
+		scoreMap = new HashMap<String, Integer>();
 		flameTexture = new Texture(Gdx.files.internal("Explosion_CN.png"));
 		texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));
 		hudTexture = new Texture(Gdx.files.internal("hudbg1.png"));
@@ -537,9 +539,11 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		if (keycode == Keys.TAB) {
+			scoreMap = mediator.getPlayersScore();
+			//System.out.println(scoreMap.values().toString());
 			((Game) Gdx.app.getApplicationListener())
 					.setScreen(new ScoreScreen(g, score, bootstrapperIP,
-							bootstrapperPort, mediator));
+							bootstrapperPort, mediator, scoreMap));
 			hudSB.dispose();
 			texture.dispose();
 			textureOfOtherPlayers.dispose();
