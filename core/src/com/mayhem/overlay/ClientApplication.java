@@ -444,21 +444,21 @@ public class ClientApplication implements Application, ScribeClient,
 		for (PlayerState player : region.players)
 			result.put(player.getId().toString(), player.getScore());
 
-		if (depth > 0) {
-			HashMap<String, Integer> tmp = getNeighborScore(
-					this.leftCoordinator, depth);
-			if (tmp != null)
-				result.putAll(tmp);
-			tmp = getNeighborScore(this.rightCoordinator, depth);
-			if (tmp != null)
-				result.putAll(tmp);
-			tmp = getNeighborScore(this.topCoordinator, depth);
-			if (tmp != null)
-				result.putAll(tmp);
-			tmp = getNeighborScore(this.bottomCoordinator, depth);
-			if (tmp != null)
-				result.putAll(tmp);
-		}
+//		if (depth > 0) {
+//			HashMap<String, Integer> tmp = getNeighborScore(
+//					this.leftCoordinator, depth);
+//			if (tmp != null)
+//				result.putAll(tmp);
+//			tmp = getNeighborScore(this.rightCoordinator, depth);
+//			if (tmp != null)
+//				result.putAll(tmp);
+//			tmp = getNeighborScore(this.topCoordinator, depth);
+//			if (tmp != null)
+//				result.putAll(tmp);
+//			tmp = getNeighborScore(this.bottomCoordinator, depth);
+//			if (tmp != null)
+//				result.putAll(tmp);
+//		}
 		return result;
 	}
 

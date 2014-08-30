@@ -17,7 +17,8 @@ public class ScoreReplyMessage extends ActionAcknowledgmentMessage {
 
 	public void execute(ClientApplication app) {
 		if (this.getActionMessageId() != -1) {
-			app.scoreReplyReceived(this.getActionMessageId(), this.scores);
+			app.raiseActionAcknowledgmentEvent(this.getActionMessageId(), this.scores);
+			app.scoreReplyReceived(this.getActionMessageId(), this.scores);			
 		}
 	}
 }
