@@ -4,7 +4,6 @@ package com.mayhem.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-//import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -19,7 +18,6 @@ import com.badlogic.gdx.InputProcessor;
 
 //for camera
 import com.badlogic.gdx.graphics.OrthographicCamera;
-//import com.badlogic.gdx.maps.MapObjects;
 //for map
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -29,7 +27,6 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 //for collision detection
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
-//import com.badlogic.gdx.physics.bullet.linearmath.int4;
 import com.mayhem.mediator.Mediator;
 import com.mayhem.overlay.BombState;
 import com.mayhem.overlay.IRegionStateListener;
