@@ -540,15 +540,18 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 		if (keycode == Keys.TAB) {
 			scoreMap = mediator.getPlayersScore();
-			//System.out.println(scoreMap.values().toString());
+			scoreMap.remove(mediator.GetNodeId().toString());
+//			System.out.println(scoreMap.values().toString());
+//			System.out.println("keyset" + scoreMap.keySet());
+//			System.out.println("ID" + mediator.GetNodeId());
 			((Game) Gdx.app.getApplicationListener())
 					.setScreen(new ScoreScreen(g, score, bootstrapperIP,
 							bootstrapperPort, mediator, scoreMap));
-			hudSB.dispose();
-			texture.dispose();
-			textureOfOtherPlayers.dispose();
-			flameTexture.dispose();
-			hudTexture.dispose();
+//			hudSB.dispose();
+//			texture.dispose();
+//			textureOfOtherPlayers.dispose();
+//			flameTexture.dispose();
+//			hudTexture.dispose();
 		}
 		return true;
 	}

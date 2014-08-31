@@ -1,6 +1,10 @@
 package com.mayhem.game;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -18,10 +22,13 @@ public class ScoreScreen implements InputProcessor, Screen {
 	final MajorMayhemGame g;
 	private SpriteBatch batch;
 	private BitmapFont font;
-	private int score, port;
+	private int score, port, scores[];
+	private int i=1,j=1;
 	private String ip;
 	private Mediator mediator;
 	private HashMap<String, Integer> scoreMap;
+	private Iterator<Map.Entry<String, Integer>> iter;
+	private Set keySet;
 	
 	public ScoreScreen(final MajorMayhemGame game, int score, String ip, int port, Mediator mediator, HashMap<String, Integer> scoreMap) {
 		this.g = game;
@@ -32,7 +39,17 @@ public class ScoreScreen implements InputProcessor, Screen {
 		this.ip = ip;
 		this.mediator = mediator;
 		this.scoreMap = scoreMap;
-//		System.out.println(scoreMap.values());
+//		keySet = scoreMap.keySet();
+//		keySet = this.scoreMap.entrySet();
+//		iter = scoreMap.entrySet().iterator();
+//		iter = keySet.iterator();
+//		while(iter.hasNext()) {
+//			Map.Entry me = (Map.Entry)iter.next();
+////			System.out.println(me.getValue());
+//			scores[i] = (Integer)me.getValue();
+//			i++;
+//		}
+//		System.out.println("scores" + scoreMap.values());
 	}
 
 	@Override
@@ -46,10 +63,12 @@ public class ScoreScreen implements InputProcessor, Screen {
 		font.setColor(Color.RED);
 		font.draw(batch, "You - "+score, 20, 500);
 		font.setColor(Color.YELLOW);
-		//makeshift score list
-/*		for(int i=0; i<10; i++) {
-			font.draw(batch, "Player "+(i+1)+" - ??", 20, 450-(50*i));
-		}*/
+		keySet = scoreMap.entrySet();
+		iter = keySet.iterator();
+		for(int i=0;i<scoreMap.size();i++) {
+			Map.Entry me = (Map.Entry)iter.next();
+			font.draw(batch, "Player "+(i+1)+" - " + me.getValue(), 20, 450-(50*i));
+		}
 		batch.end();
 		
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
