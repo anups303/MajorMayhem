@@ -127,6 +127,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		timer = new Timer();
 		timer.start();
 		scoreMap = new HashMap<String, Integer>();
+		//sprites loaded here 
 		flameTexture = new Texture(Gdx.files.internal("Explosion_CN.png"));
 		texture = new Texture(Gdx.files.internal("Bman_f_f00.png"));
 		hudTexture = new Texture(Gdx.files.internal("hudbg1.png"));
@@ -144,10 +145,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		players = new HashMap<Id, Sprite>();
 
 		// for overlay configuration
-		// mediator = new Mediator();
 		Region init = null;
-		// boolean coordinator = System.getenv("newGame").equalsIgnoreCase("1");
-		// String bootstrapperIP = System.getenv("IP");
 
 		if (bootstrapperIP != null && bootstrapperIP.equals(""))
 			bootstrapperIP = null;
@@ -159,11 +157,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 				}
 				posX = posY = 1 * moveAmount;
 			} else {
-				// int bootstrapperPort = 9001;
-				// if (System.getenv("bootstrapperPort") != null) {
-				// bootstrapperPort =
-				// Integer.parseInt(System.getenv("bootstrapperPort"));
-				// }
 				int localPort = 2000 + (int) (Math.random() * 2000);
 				if (System.getenv("localPort") != null) {
 					localPort = Integer.parseInt(System.getenv("localPort"));
@@ -266,6 +259,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public void dispose() {
+		//to be called every time screen is changed
 		mediator.leaveGame();
 		// batch.dispose();
 		hudSB.dispose();
@@ -288,7 +282,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	protected void explodeCellAt(GUIBombState bi, int x, int y) {
 		int cX = x % 20 + 20, cY = y % 20 + 20;
 		Cell c = collisionLayer.getCell(cX, cY);
-		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {
+		if (c != null && c.getTile().getProperties().containsKey("destroyable")) {				//blocks which can be destroyed have the keyword "destroyable"
 			collisionLayer.setCell(cX, cY, null);
 		}
 		if ((bi != null) && (posX / moveAmount == x && posY / moveAmount == y)) {
@@ -298,29 +292,23 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 	}
 
 	@Override
-	public void render(float delta) {
+	public void render(float delta) {				//called multiple times each second. main work happens here
 		// for sprite
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		// for input
-		// sprite.setPosition(posX, posY);
 		sprite.setPosition(((posX / moveAmount) % 20 + 20) * moveAmount,
 				((posY / moveAmount) % 20 + 20) * moveAmount);
 
 		// for camera
 		batch.setProjectionMatrix(camera.combined);
-		// hudSB.setProjectionMatrix(camera.combined); //do not set projection
-		// matrix!
-		// hudCam.position.set(x, y, z)
 
 		// for map
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
 
-		// hudSB.enableBlending(); //not needed? will try with external
-		// transparency
-		batch.begin();
+		batch.begin();					//sprite batch encompasses all sprites
 
 		synchronized (mapId) {
 			if (mapId != newMapId) {
@@ -424,6 +412,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		hudRtFont.setColor(Color.YELLOW);
 
 		// hudFont.draw(hudSB, "Time: " + timer.elapsedTime(), 50, 595);
+		//initially planned a timer - removed for now
 		if (died) {
 			long d = ((timeToBackToGame - System.currentTimeMillis()) / 1000);
 			hudFont.draw(hudSB,
@@ -472,6 +461,7 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 
 	@Override
 	public boolean keyDown(int keycode) {
+		//movement controls
 		// tile width and height set at 32 px
 		Cell cell = null;
 		float xVar = 0, yVar = 0;
@@ -492,8 +482,6 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		// convert pixel position to tile position
-		// System.out.println("x:" + (20 + ((int) (posX + xVar) / moveAmount))
-		// + "y:" + (20 + (int) ((posY + yVar) / moveAmount)));
 		cell = collisionLayer.getCell(
 				20 + ((int) (posX + xVar) / moveAmount) % 20,
 				20 + ((int) (posY + yVar) / moveAmount) % 20);
@@ -539,11 +527,9 @@ public class Bomber extends ApplicationAdapter implements InputProcessor,
 		}
 
 		if (keycode == Keys.TAB) {
+			//move to score screen
 			scoreMap = mediator.getPlayersScore();
 			scoreMap.remove(mediator.GetNodeId().toString());
-//			System.out.println(scoreMap.values().toString());
-//			System.out.println("keyset" + scoreMap.keySet());
-//			System.out.println("ID" + mediator.GetNodeId());
 			((Game) Gdx.app.getApplicationListener())
 					.setScreen(new ScoreScreen(g, score, bootstrapperIP,
 							bootstrapperPort, mediator, scoreMap));

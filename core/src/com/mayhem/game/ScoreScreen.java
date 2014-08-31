@@ -23,7 +23,6 @@ public class ScoreScreen implements InputProcessor, Screen {
 	private SpriteBatch batch;
 	private BitmapFont font;
 	private int score, port, scores[];
-	private int i=1,j=1;
 	private String ip;
 	private Mediator mediator;
 	private HashMap<String, Integer> scoreMap;
@@ -39,17 +38,6 @@ public class ScoreScreen implements InputProcessor, Screen {
 		this.ip = ip;
 		this.mediator = mediator;
 		this.scoreMap = scoreMap;
-//		keySet = scoreMap.keySet();
-//		keySet = this.scoreMap.entrySet();
-//		iter = scoreMap.entrySet().iterator();
-//		iter = keySet.iterator();
-//		while(iter.hasNext()) {
-//			Map.Entry me = (Map.Entry)iter.next();
-////			System.out.println(me.getValue());
-//			scores[i] = (Integer)me.getValue();
-//			i++;
-//		}
-//		System.out.println("scores" + scoreMap.values());
 	}
 
 	@Override
