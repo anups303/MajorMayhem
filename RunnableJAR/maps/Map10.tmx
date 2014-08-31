@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="60" height="60" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="TileB" tilewidth="32" tileheight="32">
+  <image source="../TileB.png" width="512" height="512"/>
+  <tile id="167">
+   <properties>
+    <property name="blocked" value=""/>
+    <property name="destroyable" value=""/>
+   </properties>
+  </tile>
+  <tile id="183">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="233">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="tileset" tilewidth="32" tileheight="32">
+  <image source="../tileset.png" width="512" height="512"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMA6C9f6wVW4+jYC+pqqqqqqqqqqqqqqqqqvrqAPsaxNc=
+  </data>
+ </layer>
+ <layer name="Fore" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztWwtuKzEIzP1P0iPsmXqKqmosWWgGGMD5tB1ppfTF2IyN+WXf5+12+/xjz1+Bwve6Pwsf92f/3pPtYmIOjy/ixp4sqrKWa8SdzYv4orkUTkiO6aful5W1NheBne+uh9UH6Wf1rnKI0DmL73EVf6VwuZzx6r+jcepdQnyXnSjrszPf9bLzVuZUx9g98c4345u89TK6nIZdg50vu4/2u46/OYllRxm+nvxC1TdlbVSJ7Ra7z1b5Tp6f558iPif5VvgpcXBy/9Calm/kr5A+183npMb9CXg+n8UXj++j/FBlnSgfZTadya/QGkremzn77t5m46LCN/o+s9cZZNeu7D/ji3T04m5UD2T0Wblndp/t3NG+onwym5+dynEVqH6mWi+8M/75/sDaSHQvFGTuTDeWoxrPs+fTsVetfbNxbZ8HzTVlz1Hst+O8eplB4cv6DF2+FX+N4NVfFTD5Sj6p1HQdVOW9tVH8fYW+RBWRbhW+XVTywCmbOhV/VT86WRNn7FnJWXd49XAVnt/o7o/CF/l4r79s5RUdT9WQWXuu6NvBqV5Jt3+V3YdObKus/UHGTfXrXgl2H1h/o5PrnUAn32B/R/eX9Rwquuw5f1QDRfWYco88vqhP8872bXXPnO9k739SdiGKpTsy8cjG+WfWAjuU2L/w38/53cja8+6nd9+q3B0G9k5GxeYjv18938kamcV7lW9mfKZfV91nBOTvvd8m9s/WtuzYNb5yvpWc+CKfLdR3xybxaH/VqS0UGXYfTvHt9tpQnleda0fm/Y213qP6eFFOE/lgD1m+9rMCVJ+pedHU2qheiH67mMwl0Vxo/Uy/abdFpnvmfeDItjr1mSej1oSZHN97v47NY3VCudZETTEBe9eV+ug3wPLd8+Tp9/OZzaiySIdqflW1SXQH2G9+3h1ma7I75dXmiDfji2oiz2chvZW65wIPk2P+OGOXz6p/Ee/IHtl4Bc+s9+05PcIvvkJ/Q43hHVT/P9o7P1+E5kWP
+  </data>
+ </layer>
+</map>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="60" height="60" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="set1" tilewidth="32" tileheight="32">
+  <image source="../Woodland_Tileset.png" width="512" height="512"/>
+ </tileset>
+ <tileset firstgid="257" name="TileB" tilewidth="32" tileheight="32">
+  <image source="../TileB.png" width="512" height="512"/>
+  <tile id="226">
+   <properties>
+    <property name="blocked" value=""/>
+    <property name="destroyable" value=""/>
+   </properties>
+  </tile>
+  <tile id="245">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="246">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKFr+f2brMdQcNVUVVVVVVVVVVVVVVVV1VcP1kbHrQ==
+  </data>
+ </layer>
+ <layer name="Fore" width="60" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztW9lOYzEMpf//mfxDeUU8XI3J+GxO2tFAj1RBszg+SbzEgo/b29vHL/v8FiR877c/P++3v/vWttqO+p31JuPReifO1+XijEP9rnw1B/F1Obzfvn9UezdX6dj1d7JrH5LH+Lo6noIje9Xr0Xxr/2rPnf2sbQgdV8Ud7U/KV+k+8T0KkzvD7OSCyzdZU9lvpwNbg/nz+7KGwg7flVtyJslYth+1r9vfdeyKlO8U3dz0rOq8zm8hf12RxN/kTB3fg/g69wfdgZSvsl1mh+y8EN/ubqZgMWqF4ov2WfkcFSdS7PiKqqfDt0NyD1ib45eYHmhtdK9TvjUGT3RZscpxY2pqdxcSviqncjCxA6QLm3eK7wSn4jSzLeZ3nsl3Jy9J/G5n7w7fn44X3+9AcWXNh9z5zB+79QXU7uik3oNOfJjo1/VN+CI9E75MjpLn6pf21XbnTrjxaB2D6g4Tvs67N5V/gm8Sy1kbW7e2JXGHAd2PlO+KyVug43WS6yVPyZnEo8n9dnMVp0bH5Cq/w/IrdUdTO3PqRArKHygfofiy+Mv2On3DuEjj9aqHmz9Xjt0eq1riKnMSe1ed0vz6Cx1ftXbl6IxF+q6yXFS+bgxDfJUOyg7r7+8H9kOtw/xTN07558QOk3oNkz/h647bfR+5b9L0Heyu+Sy+jr24tc7J2nUdNaYC8VX5+o7ezM/X72w+mteNqUj4IvucxMGu3/2e5iUVHd8TOROb48hJa5hM7qt+9a+1eB6Sv1dJ66oTn3at6fh35N/YfX8UX6Qjkq/ySlcO0tPNJx1Zu2fZtZ/w+d1aTj5ZkfBya0voHZnUEFQ9dpo/s1zZmT+Fykd267EOVK61wzOpJaAaajc3fQ8y/SZv+LWO4Oxh+s5X9Y0T90/l3xOgPDmR96h8g50T60ty7AnSv8+5xpy6A50N7No9O3OnPunU6Kb3dOLv3JpSh+n5umPrnPTN062Jvru2gfyVW3dK9tmpgyX3ZFIL3PVX6sxQLuXMc3izPT/Fl+XXzlyl0w6UXun/pyT33Vkf1Tactgle7/2fjen/o/3Pn08j/D8E
+  </data>
+ </layer>
+</map>
